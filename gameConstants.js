@@ -27,3 +27,11 @@ const TRALALARO_HEIGHT_OFFSET = 0; // Ground based
 const TRALALARO_VERTICAL_SPEED = 0; // Does not fly
 const TRALALARO_MIN_Y = GROUND_Y;
 const TRALALARO_MAX_Y = GROUND_Y;
+
+// Camera behavior
+const CAMERA_ZOOM_SPEED = 0.03; // How fast camera zooms
+const CAMERA_PAN_SPEED = 0.05; // How fast camera pans
+const MIN_ZOOM = 1.0; // Minimum zoom level (zoomed in)
+const MAX_ZOOM = 0.6; // Maximum zoom level (zoomed out)
+const CAMERA_BUFFER_X = canvas.width * 0.2; // Horizontal zoom-out buffer
+const CAMERA_BUFFER_Y = canvas.height * 0.1; // Vertical zoom-out buffer
