@@ -210,11 +210,8 @@ specialMovesListElement.innerHTML = `<strong>특수 기술 정보 없음.</stron
 characterSelectionScreen.style.display = 'none';
 gameContainer.style.display = 'flex';
 
-// Initial drawing to show characters before countdown
-drawPixelBackground();
-drawPlayer(this.player1);
-drawPlayer(this.player2);
-this.drawUI();
+    // Initial drawing to show characters before countdown
+    this.draw();
 
 this.currentRound = 1;
 this.player1Score = 0;
@@ -675,7 +672,6 @@ this.startNewRound();
 */
 draw() {
 ctx.clearRect(0, 0, canvas.width, canvas.height);
-drawPixelBackground();
 
 // --- Camera Transform ---
 ctx.save();
@@ -713,6 +709,9 @@ this.cameraZoom += (targetZoom - this.cameraZoom) * CAMERA_ZOOM_SPEED;
 ctx.translate(canvas.width / 2, canvas.height / 2);
 ctx.scale(this.cameraZoom, this.cameraZoom);
 ctx.translate(-this.cameraX, -this.cameraY);
+
+    // Draw world background and objects with camera transform
+    drawPerspectiveBackground();
 
 // --- Draw Game Elements (affected by camera) ---
 drawPlayer(this.player1);
