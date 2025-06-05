@@ -1,0 +1,299 @@
+/* 기본 스타일 */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap'); /* 픽셀 아트 폰트 추가 */
+
+body {
+font-family: 'Inter', sans-serif;
+background-color: #1a202c; /* 어두운 배경 */
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+margin: 0;
+overflow: hidden; /* 스크롤바 방지 */
+}
+
+/* 게임 컨테이너 스타일 */
+.game-container {
+display: none; /* 기본적으로 숨김, 캐릭터 선택 후 표시 */
+flex-direction: column;
+align-items: center;
+background-color: #2d3748; /* 약간 밝은 어두운 배경 */
+padding: 20px;
+border-radius: 15px;
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+max-width: 90vw; /* 반응형 너비 */
+width: 800px; /* 최대 너비 */
+position: relative; /* 화면 흔들림 효과를 위해 */
+}
+
+/* 화면 흔들림 효과 */
+.shake-screen {
+animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+transform: translate3d(0, 0, 0);
+backface-visibility: hidden;
+perspective: 1000px;
+}
+
+@keyframes shake {
+10%, 90% { transform: translate3d(-1px, 0, 0); }
+20%, 80% { transform: translate3d(2px, 0, 0); }
+30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* 캐릭터 선택 화면 스타일 */
+#characterSelectionScreen {
+display: flex; /* 기본적으로 표시 */
+flex-direction: column;
+align-items: center;
+background-color: #2d3748;
+padding: 40px;
+border-radius: 15px;
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+max-width: 90vw;
+width: 600px;
+color: #e2e8f0;
+text-align: center;
+}
+
+#characterSelectionScreen h2 {
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+font-size: 2.5rem;
+color: #ecc94b; /* 노란색 제목 */
+margin-bottom: 30px;
+text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.character-select-buttons {
+display: flex;
+gap: 25px;
+flex-wrap: wrap;
+justify-content: center;
+}
+
+.character-button {
+background: linear-gradient(145deg, #4299e1, #3182ce); /* 파란색 그라데이션 */
+color: white;
+padding: 15px 30px;
+border-radius: 10px;
+border: none;
+cursor: pointer;
+font-size: 1.2rem;
+font-weight: bold;
+box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+transition: all 0.2s ease-in-out;
+outline: none;
+min-width: 200px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+}
+
+.character-button:hover {
+background: linear-gradient(145deg, #3182ce, #4299e1);
+transform: translateY(-3px) scale(1.02);
+box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+}
+
+.character-button:active {
+transform: translateY(0);
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.character-button.tralalaro {
+background: linear-gradient(145deg, #a78bfa, #8b5cf6); /* 보라색 그라데이션 */
+}
+.character-button.tralalaro:hover {
+background: linear-gradient(145deg, #8b5cf6, #a78bfa);
+}
+
+/* 캔버스 스타일 */
+canvas {
+border-radius: 10px;
+box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+width: 100%; /* 캔버스 반응형 너비 */
+max-width: 760px; /* 캔버스 최대 너비 */
+height: 400px; /* 캔버스 고정 높이 */
+margin-bottom: 20px;
+image-rendering: pixelated; /* 도트 이미지 렌더링을 위해 */
+image-rendering: -moz-crisp-edges;
+image-rendering: -webkit-optimize-contrast;
+image-rendering: optimize-contrast;
+}
+
+/* UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 */
+.health-bar-container, .mana-bar-container, #roundTimer, .game-message {
+display: none;
+}
+
+/* 컨트롤 버튼 컨테이너 스타일 */
+.controls {
+display: flex;
+justify-content: center;
+gap: 15px;
+margin-top: 20px;
+flex-wrap: wrap; /* 작은 화면에서 줄 바꿈 허용 */
+}
+
+/* 컨트롤 그룹 스타일 */
+.control-group {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 5px;
+}
+
+/* 컨트롤 라벨 스타일 */
+.control-label {
+color: #cbd5e0; /* 밝은 회색 */
+font-size: 0.9rem;
+font-weight: bold;
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+}
+
+/* 컨트롤 버튼 스타일 */
+.control-button {
+background: linear-gradient(145deg, #4299e1, #3182ce); /* 파란색 그라데이션 */
+color: white;
+padding: 10px 20px;
+border-radius: 8px;
+border: none;
+cursor: pointer;
+font-size: 1rem;
+font-weight: bold;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+transition: all 0.2s ease-in-out;
+outline: none;
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+}
+
+.control-button:hover {
+background: linear-gradient(145deg, #3182ce, #4299e1);
+transform: translateY(-2px);
+box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+.control-button:active {
+transform: translateY(0);
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 특수 기술 목록 스타일 */
+.special-moves-list {
+color: #cbd5e0;
+font-size: 0.85rem;
+margin-top: 10px;
+text-align: center;
+line-height: 1.4;
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+}
+.special-moves-list strong {
+color: #ecc94b;
+}
+
+/* 메시지 박스 오버레이 스타일 */
+.message-box-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.7);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+opacity: 0;
+visibility: hidden;
+transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.message-box-overlay.active {
+opacity: 1;
+visibility: visible;
+}
+
+/* 메시지 박스 스타일 */
+.message-box {
+background-color: #2d3748;
+padding: 30px;
+border-radius: 15px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+text-align: center;
+color: #e2e8f0;
+max-width: 400px;
+width: 90%;
+transform: scale(0.9);
+transition: transform 0.3s ease-in-out;
+}
+
+.message-box-overlay.active .message-box {
+transform: scale(1);
+}
+
+.message-box h3 {
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+font-size: 2rem;
+margin-bottom: 15px;
+color: #ecc94b;
+}
+
+.message-box p {
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+font-size: 1.2rem;
+margin-bottom: 25px;
+}
+
+.message-box button {
+background: linear-gradient(145deg, #48bb78, #38a169); /* 녹색 그라데이션 */
+color: white;
+padding: 12px 25px;
+border-radius: 8px;
+border: none;
+cursor: pointer;
+font-size: 1.1rem;
+font-weight: bold;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+transition: all 0.2s ease-in-out;
+outline: none;
+font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+}
+
+.message-box button:hover {
+background: linear-gradient(145deg, #38a169, #48bb78);
+transform: translateY(-2px);
+box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 미디어 쿼리 (반응형 디자인) */
+@media (max-width: 600px) {
+.game-container, #characterSelectionScreen {
+padding: 15px;
+}
+canvas {
+height: 300px;
+}
+/* UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 */
+.health-bar-container, .mana-bar-container, #roundTimer, .game-message {
+display: none;
+}
+.controls {
+flex-direction: column;
+gap: 10px;
+}
+.control-button {
+width: 100%;
+}
+.message-box h3 {
+font-size: 1.5rem;
+}
+.message-box p {
+font-size: 1rem;
+}
+.character-button {
+min-width: unset;
+width: 100%;
+}
+}
