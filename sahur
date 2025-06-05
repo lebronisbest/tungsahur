@@ -438,6 +438,9 @@
         const ROUND_TIME = 99;
         const MAX_ROUNDS = 3; // Best of 3 rounds
 
+        // Size of the world, larger than the canvas to allow camera panning
+        const WORLD_WIDTH = 2000;
+
         const GRAVITY = 0.3; // Gravity for jump
         const JUMP_VELOCITY = -7; // Initial upward velocity for jump
         const GROUND_Y = canvas.height - PLAYER_HEIGHT - 20; // Ground level for Tungtung
@@ -534,12 +537,12 @@
             skyGradient.addColorStop(0, '#87CEEB');
             skyGradient.addColorStop(1, '#6A5ACD');
             ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, WORLD_WIDTH, canvas.height);
 
             // Clouds (random pixels)
             ctx.fillStyle = '#FFFFFF';
             for (let i = 0; i < 70; i++) {
-                const cloudX = Math.floor(Math.random() * canvas.width / pixel) * pixel;
+                const cloudX = Math.floor(Math.random() * WORLD_WIDTH / pixel) * pixel;
                 const cloudY = Math.floor(Math.random() * canvas.height / 3 / pixel) * pixel;
                 const cloudWidth = Math.floor(Math.random() * 8 + 3) * pixel;
                 const cloudHeight = Math.floor(Math.random() * 4 + 2) * pixel;
@@ -550,13 +553,13 @@
             ctx.fillStyle = '#36454F';
             ctx.beginPath();
             ctx.moveTo(0, canvas.height - 80);
-            ctx.lineTo(canvas.width * 0.15, canvas.height - 130);
-            ctx.lineTo(canvas.width * 0.3, canvas.height - 90);
-            ctx.lineTo(canvas.width * 0.45, canvas.height - 150);
-            ctx.lineTo(canvas.width * 0.6, canvas.height - 100);
-            ctx.lineTo(canvas.width * 0.8, canvas.height - 140);
-            ctx.lineTo(canvas.width, canvas.height - 90);
-            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(WORLD_WIDTH * 0.15, canvas.height - 130);
+            ctx.lineTo(WORLD_WIDTH * 0.3, canvas.height - 90);
+            ctx.lineTo(WORLD_WIDTH * 0.45, canvas.height - 150);
+            ctx.lineTo(WORLD_WIDTH * 0.6, canvas.height - 100);
+            ctx.lineTo(WORLD_WIDTH * 0.8, canvas.height - 140);
+            ctx.lineTo(WORLD_WIDTH, canvas.height - 90);
+            ctx.lineTo(WORLD_WIDTH, canvas.height);
             ctx.lineTo(0, canvas.height);
             ctx.fill();
 
@@ -564,22 +567,22 @@
             ctx.fillStyle = '#4B5563';
             ctx.beginPath();
             ctx.moveTo(0, canvas.height - 50);
-            ctx.lineTo(canvas.width / 4, canvas.height - 100);
-            ctx.lineTo(canvas.width / 2, canvas.height - 50);
-            ctx.lineTo(canvas.width * 3 / 4, canvas.height - 120);
-            ctx.lineTo(canvas.width, canvas.height - 60);
-            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(WORLD_WIDTH / 4, canvas.height - 100);
+            ctx.lineTo(WORLD_WIDTH / 2, canvas.height - 50);
+            ctx.lineTo(WORLD_WIDTH * 3 / 4, canvas.height - 120);
+            ctx.lineTo(WORLD_WIDTH, canvas.height - 60);
+            ctx.lineTo(WORLD_WIDTH, canvas.height);
             ctx.lineTo(0, canvas.height);
             ctx.fill();
 
             // Ground (green)
             ctx.fillStyle = '#48BB78';
-            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillRect(0, canvas.height - 40, WORLD_WIDTH, 40);
 
             // Ground details (darker green pixels)
             ctx.fillStyle = '#38A169';
             for (let i = 0; i < 150; i++) {
-                const detailX = Math.floor(Math.random() * canvas.width / pixel) * pixel;
+                const detailX = Math.floor(Math.random() * WORLD_WIDTH / pixel) * pixel;
                 const detailY = Math.floor(Math.random() * 30 / pixel) * pixel + (canvas.height - 40);
                 ctx.fillRect(detailX, detailY, pixel, pixel);
             }
@@ -1069,7 +1072,7 @@
                 }
 
                 // Deactivate if out of horizontal bounds
-                if (this.x < -this.width || this.x > canvas.width) {
+                if (this.x < -this.width || this.x > WORLD_WIDTH) {
                     this.active = false;
                 }
             }
@@ -1104,7 +1107,7 @@
                 this.selectedCharacterId = null; // Track selected character for lore generation
 
                 // Camera state
-                this.cameraX = canvas.width / 2;
+                this.cameraX = WORLD_WIDTH / 2;
                 this.cameraY = canvas.height / 2;
                 this.cameraZoom = MIN_ZOOM;
             }
@@ -1171,7 +1174,7 @@
 
                 this.player2 = {
                     ...player2Data,
-                    x: canvas.width - 100 - PLAYER_WIDTH,
+                    x: WORLD_WIDTH - 100 - PLAYER_WIDTH,
                     y: GROUND_Y, // Tralalaro also starts on the ground
                     width: PLAYER_WIDTH,
                     height: PLAYER_HEIGHT,
@@ -1216,7 +1219,7 @@
 
                 this.player2.health = MAX_HEALTH;
                 this.player2.mana = MAX_MANA;
-                this.player2.x = canvas.width - 100 - PLAYER_WIDTH;
+                this.player2.x = WORLD_WIDTH - 100 - PLAYER_WIDTH;
                 this.player2.y = GROUND_Y; // Reset Tralalaro to ground
                 this.player2.isJumping = false;
                 this.player2.velocityY = 0;
@@ -1239,7 +1242,7 @@
                 this.gameStarted = false; // Reset gameStarted for countdown
 
                 // Reset camera for new round
-                this.cameraX = canvas.width / 2;
+                this.cameraX = WORLD_WIDTH / 2;
                 this.cameraY = canvas.height / 2;
                 this.cameraZoom = MIN_ZOOM;
 
@@ -1338,7 +1341,7 @@
                 characterLoreDisplay.textContent = ''; // Clear lore text
 
                 // Reset camera state
-                this.cameraX = canvas.width / 2;
+                this.cameraX = WORLD_WIDTH / 2;
                 this.cameraY = canvas.height / 2;
                 this.cameraZoom = MIN_ZOOM;
             }
@@ -1660,8 +1663,8 @@
 
 
                 // Keep players within canvas bounds
-                this.player1.x = Math.max(0, Math.min(canvas.width - this.player1.width, this.player1.x));
-                this.player2.x = Math.max(0, Math.min(canvas.width - this.player2.width, this.player2.x));
+                this.player1.x = Math.max(0, Math.min(WORLD_WIDTH - this.player1.width, this.player1.x));
+                this.player2.x = Math.max(0, Math.min(WORLD_WIDTH - this.player2.width, this.player2.x));
                 // Clamp Tralalaro's vertical position
                 this.player2.y = Math.max(TRALALARO_MIN_Y, Math.min(TRALALARO_MAX_Y, this.player2.y));
 
