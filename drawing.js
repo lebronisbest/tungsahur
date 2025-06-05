@@ -131,7 +131,7 @@ function drawCanvasUI() {
   }
 
   ctx.textAlign = 'center';
-  floatingDamageNumbers.forEach(dmg => {
+  gameManager.floatingDamageNumbers.forEach(dmg => {
     ctx.font = `${dmg.isCrit ? 18 : 14}px 'Press Start 2P'`;
     ctx.fillStyle = dmg.isCrit ? 'yellow' : 'white';
     ctx.fillText(dmg.damage.toFixed(0), dmg.x, dmg.y - (1000 - dmg.timer) / 20);
