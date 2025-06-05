@@ -49,9 +49,11 @@
                 <span class="mana-bar-label" id="player2ManaLabel"></span>
             </div>
         </div>
+
         <!-- 게임 캔버스 -->
         <canvas id="gameCanvas" width="760" height="400"></canvas>
-        <!-- 게임 메시지 표시 영역 (이제 캔버스에 직접 그려짐) -->
+
+        <!-- 게임 메시지 표시 영역 -->
         <div id="gameMessage" class="game-message" style="display: none;"></div>
 
         <!-- 컨트롤 버튼 -->
@@ -60,9 +62,10 @@
                 <div class="control-label">플레이어 조작 (방향키)</div>
                 <button id="player1AttackButton" class="control-button">기본 공격 (W)</button>
                 <button id="player1GuardButton" class="control-button">가드 (S)</button>
-                <button id="player1SpecialButton" class="control-button" disabled>필살기 (F)</button> <!-- F 버튼 비활성화 -->
+                <button id="player1SpecialButton" class="control-button" disabled>필살기 (F)</button>
             </div>
         </div>
+
         <!-- 특수 기술 목록 -->
         <div id="specialMovesList" class="special-moves-list">
             <!-- 특수 기술은 여기에 동적으로 로드됩니다. -->
@@ -78,6 +81,7 @@
         </div>
     </div>
 
+    <!-- JavaScript 모듈 스크립트 분할 -->
     <script src="constants.js"></script>
     <script src="characters.js"></script>
     <script src="projectile.js"></script>
