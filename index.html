@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르 vs 트랄라레로 트랄랄라</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 캐릭터 선택 화면 -->
+    <div id="characterSelectionScreen">
+        <h2>캐릭터 선택</h2>
+        <div class="character-select-buttons">
+            <button id="selectTungtung" class="character-button tungtung">
+                퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르
+            </button>
+            <button id="selectTralalaro" class="character-button tralalaro">
+                트랄라레로 트랄랄라
+            </button>
+        </div>
+        <button id="generateLoreButton" class="control-button mt-4" style="display: none;">캐릭터 이야기 생성 ✨</button>
+        <div id="characterLoreDisplay" class="text-sm text-gray-300 mt-4 px-4 py-2 bg-gray-700 rounded-md" style="display: none; max-width: 400px; min-height: 50px; text-align: left;">
+            <!-- 캐릭터 이야기가 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 게임 컨테이너 -->
+    <div class="game-container" id="gameContainer">
+        <!-- UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 -->
+        <div id="roundTimer" style="display: none;"></div>
+        <div class="health-bar-container" style="display: none;">
+            <div class="health-bar player1-health">
+                <div id="player1Health" class="health-fill"></div>
+                <span class="health-bar-label" id="player1HealthLabel"></span>
+            </div>
+            <div class="health-bar player2-health">
+                <div id="player2Health" class="health-fill"></div>
+                <span class="health-bar-label" id="player2HealthLabel"></span>
+            </div>
+        </div>
+        <div class="mana-bar-container" style="display: none;">
+            <div class="mana-bar player1-mana">
+                <div id="player1Mana" class="mana-fill"></div>
+                <span class="mana-bar-label" id="player1ManaLabel"></span>
+            </div>
+            <div class="mana-bar player2-mana">
+                <div id="player2Mana" class="mana-fill"></div>
+                <span class="mana-bar-label" id="player2ManaLabel"></span>
+            </div>
+        </div>
+        <!-- 게임 캔버스 -->
+        <canvas id="gameCanvas" width="760" height="400"></canvas>
+        <!-- 게임 메시지 표시 영역 (이제 캔버스에 직접 그려짐) -->
+        <div id="gameMessage" class="game-message" style="display: none;"></div>
+
+        <!-- 컨트롤 버튼 -->
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-label">플레이어 조작 (방향키)</div>
+                <button id="player1AttackButton" class="control-button">기본 공격 (W)</button>
+                <button id="player1GuardButton" class="control-button">가드 (S)</button>
+                <button id="player1SpecialButton" class="control-button" disabled>필살기 (F)</button> <!-- F 버튼 비활성화 -->
+            </div>
+        </div>
+        <!-- 특수 기술 목록 -->
+        <div id="specialMovesList" class="special-moves-list">
+            <!-- 특수 기술은 여기에 동적으로 로드됩니다. -->
+        </div>
+    </div>
+
+    <!-- 커스텀 메시지 박스 -->
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="messageBoxTitle"></h3>
+            <p id="messageBoxContent"></p>
+            <button id="messageBoxCloseButton">확인</button>
+        </div>
+    </div>
+
+    <script src="constants.js"></script>
+    <script src="characters.js"></script>
+    <script src="projectile.js"></script>
+    <script src="gameManager.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
