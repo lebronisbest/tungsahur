@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르 vs 트랄라레로 트랄랄라</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 기본 스타일 */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap'); /* 픽셀 아트 폰트 추가 */
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* 어두운 배경 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* 스크롤바 방지 */
+        }
+
+        /* 게임 컨테이너 스타일 */
+        .game-container {
+            display: none; /* 기본적으로 숨김, 캐릭터 선택 후 표시 */
+            flex-direction: column;
+            align-items: center;
+            background-color: #2d3748; /* 약간 밝은 어두운 배경 */
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            max-width: 90vw; /* 반응형 너비 */
+            width: 800px; /* 최대 너비 */
+            position: relative; /* 화면 흔들림 효과를 위해 */
+        }
+
+        /* 화면 흔들림 효과 */
+        .shake-screen {
+            animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* 캐릭터 선택 화면 스타일 */
+        #characterSelectionScreen {
+            display: flex; /* 기본적으로 표시 */
+            flex-direction: column;
+            align-items: center;
+            background-color: #2d3748;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            max-width: 90vw;
+            width: 600px;
+            color: #e2e8f0;
+            text-align: center;
+        }
+
+        #characterSelectionScreen h2 {
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+            font-size: 2.5rem;
+            color: #ecc94b; /* 노란색 제목 */
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .character-select-buttons {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .character-button {
+            background: linear-gradient(145deg, #4299e1, #3182ce); /* 파란색 그라데이션 */
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease-in-out;
+            outline: none;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+        }
+
+        .character-button:hover {
+            background: linear-gradient(145deg, #3182ce, #4299e1);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .character-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .character-button.tralalaro {
+            background: linear-gradient(145deg, #a78bfa, #8b5cf6); /* 보라색 그라데이션 */
+        }
+        .character-button.tralalaro:hover {
+            background: linear-gradient(145deg, #8b5cf6, #a78bfa);
+        }
+
+        /* 캔버스 스타일 */
+        canvas {
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+            width: 100%; /* 캔버스 반응형 너비 */
+            max-width: 760px; /* 캔버스 최대 너비 */
+            height: 400px; /* 캔버스 고정 높이 */
+            margin-bottom: 20px;
+            image-rendering: pixelated; /* 도트 이미지 렌더링을 위해 */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: optimize-contrast;
+        }
+
+        /* UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 */
+        .health-bar-container, .mana-bar-container, #roundTimer, .game-message {
+            display: none;
+        }
+
+        /* 컨트롤 버튼 컨테이너 스타일 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap; /* 작은 화면에서 줄 바꿈 허용 */
+        }
+
+        /* 컨트롤 그룹 스타일 */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 컨트롤 라벨 스타일 */
+        .control-label {
+            color: #cbd5e0; /* 밝은 회색 */
+            font-size: 0.9rem;
+            font-weight: bold;
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+        }
+
+        /* 컨트롤 버튼 스타일 */
+        .control-button {
+            background: linear-gradient(145deg, #4299e1, #3182ce); /* 파란색 그라데이션 */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+            outline: none;
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+        }
+
+        .control-button:hover {
+            background: linear-gradient(145deg, #3182ce, #4299e1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 특수 기술 목록 스타일 */
+        .special-moves-list {
+            color: #cbd5e0;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+            line-height: 1.4;
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+        }
+        .special-moves-list strong {
+            color: #ecc94b;
+        }
+
+        /* 메시지 박스 오버레이 스타일 */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .message-box-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 메시지 박스 스타일 */
+        .message-box {
+            background-color: #2d3748;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            text-align: center;
+            color: #e2e8f0;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .message-box-overlay.active .message-box {
+            transform: scale(1);
+        }
+
+        .message-box h3 {
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #ecc94b;
+        }
+
+        .message-box p {
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+
+        .message-box button {
+            background: linear-gradient(145deg, #48bb78, #38a169); /* 녹색 그라데이션 */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+            outline: none;
+            font-family: 'Press Start 2P', cursive; /* 픽셀 아트 폰트 적용 */
+        }
+
+        .message-box button:hover {
+            background: linear-gradient(145deg, #38a169, #48bb78);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 미디어 쿼리 (반응형 디자인) */
+        @media (max-width: 600px) {
+            .game-container, #characterSelectionScreen {
+                padding: 15px;
+            }
+            canvas {
+                height: 300px;
+            }
+            /* UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 */
+            .health-bar-container, .mana-bar-container, #roundTimer, .game-message {
+                display: none;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .control-button {
+                width: 100%;
+            }
+            .message-box h3 {
+                font-size: 1.5rem;
+            }
+            .message-box p {
+                font-size: 1rem;
+            }
+            .character-button {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 캐릭터 선택 화면 -->
+    <div id="characterSelectionScreen">
+        <h2>캐릭터 선택</h2>
+        <div class="character-select-buttons">
+            <button id="selectTungtung" class="character-button tungtung">
+                퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르
+            </button>
+            <button id="selectTralalaro" class="character-button tralalaro">
+                트랄라레로 트랄랄라
+            </button>
+        </div>
+        <button id="generateLoreButton" class="control-button mt-4" style="display: none;">캐릭터 이야기 생성 ✨</button>
+        <div id="characterLoreDisplay" class="text-sm text-gray-300 mt-4 px-4 py-2 bg-gray-700 rounded-md" style="display: none; max-width: 400px; min-height: 50px; text-align: left;">
+            <!-- 캐릭터 이야기가 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 게임 컨테이너 -->
+    <div class="game-container" id="gameContainer">
+        <!-- UI 요소는 이제 캔버스에 직접 그려지므로 HTML 요소는 숨김 -->
+        <div id="roundTimer" style="display: none;"></div>
+        <div class="health-bar-container" style="display: none;">
+            <div class="health-bar player1-health">
+                <div id="player1Health" class="health-fill"></div>
+                <span class="health-bar-label" id="player1HealthLabel"></span>
+            </div>
+            <div class="health-bar player2-health">
+                <div id="player2Health" class="health-fill"></div>
+                <span class="health-bar-label" id="player2HealthLabel"></span>
+            </div>
+        </div>
+        <div class="mana-bar-container" style="display: none;">
+            <div class="mana-bar player1-mana">
+                <div id="player1Mana" class="mana-fill"></div>
+                <span class="mana-bar-label" id="player1ManaLabel"></span>
+            </div>
+            <div class="mana-bar player2-mana">
+                <div id="player2Mana" class="mana-fill"></div>
+                <span class="mana-bar-label" id="player2ManaLabel"></span>
+            </div>
+        </div>
+        <!-- 게임 캔버스 -->
+        <canvas id="gameCanvas" width="760" height="400"></canvas>
+        <!-- 게임 메시지 표시 영역 (이제 캔버스에 직접 그려짐) -->
+        <div id="gameMessage" class="game-message" style="display: none;"></div>
+
+        <!-- 컨트롤 버튼 -->
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-label">플레이어 조작 (방향키)</div>
+                <button id="player1AttackButton" class="control-button">기본 공격 (W)</button>
+                <button id="player1GuardButton" class="control-button">가드 (S)</button>
+                <button id="player1SpecialButton" class="control-button" disabled>필살기 (F)</button> <!-- F 버튼 비활성화 -->
+            </div>
+        </div>
+        <!-- 특수 기술 목록 -->
+        <div id="specialMovesList" class="special-moves-list">
+            <!-- 특수 기술은 여기에 동적으로 로드됩니다. -->
+        </div>
+    </div>
+
+    <!-- 커스텀 메시지 박스 -->
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="messageBoxTitle"></h3>
+            <p id="messageBoxContent"></p>
+            <button id="messageBoxCloseButton">확인</button>
+        </div>
+    </div>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        /**
+         * 화면 흔들림 효과를 적용합니다.
+         */
+        function shakeScreen() {
+            gameContainer.classList.add('shake-screen');
+            setTimeout(() => {
+                gameContainer.classList.remove('shake-screen');
+            }, SCREEN_SHAKE_DURATION);
+        }
+
+        /**
+         * 캔버스에 플레이어를 그립니다.
+         * 이 함수는 이제 각 플레이어 객체에 정의된 `drawCharacter` 함수를 호출합니다.
+         * @param {object} player - 그릴 플레이어 객체.
+         */
+        function drawPlayer(player) {
+            if (player.drawCharacter) {
+                player.drawCharacter(player, ctx);
+            }
+        }
+
+        // Get UI elements
+        const characterSelectionScreen = document.getElementById('characterSelectionScreen');
+        const gameContainer = document.getElementById('gameContainer');
+        const selectTungtungButton = document.getElementById('selectTungtung');
+        const selectTralalaroButton = document.getElementById('selectTralalaro'); // Changed to new character button
+        const player1AttackButton = document.getElementById('player1AttackButton');
+        const player1GuardButton = document.getElementById('player1GuardButton');
+        const player1SpecialButton = document.getElementById('player1SpecialButton');
+        const specialMovesListElement = document.getElementById('specialMovesList');
+        const messageBoxOverlay = document.getElementById('messageBoxOverlay');
+        const messageBoxTitle = document.getElementById('messageBoxTitle');
+        const messageBoxContent = document.getElementById('messageBoxContent');
+        const messageBoxCloseButton = document.getElementById('messageBoxCloseButton');
+        const generateLoreButton = document.getElementById('generateLoreButton');
+        const characterLoreDisplay = document.getElementById('characterLoreDisplay');
+
+        // Game constants
+        const PLAYER_WIDTH = 32;
+        const PLAYER_HEIGHT = 32;
+        const PLAYER_SPEED = 2; // Reduced for 32x32 characters
+        const ATTACK_RANGE = 20;
+        const MAX_HEALTH = 100;
+        const MAX_MANA = 100;
+        const MANA_REGEN_RATE_PER_SECOND = 15;
+        const BASIC_ATTACK_COOLDOWN = 400; // Basic attack cooldown
+        const HIT_EFFECT_DURATION = 100;
+        const GUARD_DAMAGE_REDUCTION_FACTOR = 0.5;
+        const AI_GUARD_CHANCE = 0.4;
+        const AI_GUARD_DURATION = 800;
+        const COMMAND_WINDOW = 300;
+        const SCREEN_SHAKE_DURATION = 150;
+        const ROUND_TIME = 99;
+        const MAX_ROUNDS = 3; // Best of 3 rounds
+
+        const GRAVITY = 0.3; // Gravity for jump
+        const JUMP_VELOCITY = -7; // Initial upward velocity for jump
+        const GROUND_Y = canvas.height - PLAYER_HEIGHT - 20; // Ground level for Tungtung
+
+        // Tralalaro specific constants, it's a ground based character
+        const TRALALARO_HEIGHT_OFFSET = 0; // Tralalaro is ground based
+        const TRALALARO_VERTICAL_SPEED = 0; // Tralalaro does not fly
+        const TRALALARO_MIN_Y = GROUND_Y;
+        const TRALALARO_MAX_Y = GROUND_Y;
+
+
+        // Camera constants
+        const CAMERA_ZOOM_SPEED = 0.03; // How fast camera zooms (slower)
+        const CAMERA_PAN_SPEED = 0.05; // How fast camera pans (slower)
+        const MIN_ZOOM = 1.0; // Minimum zoom level (zoomed in)
+        const MAX_ZOOM = 0.6; // Adjusted: Maximum zoom level (zoomed out more to see both)
+        const CAMERA_BUFFER_X = canvas.width * 0.2; // Horizontal buffer to trigger zoom out
+        const CAMERA_BUFFER_Y = canvas.height * 0.1; // Vertical buffer to trigger zoom out
+
+        // Game state variables
+        let player1 = {};
+        let player2 = {};
+        // Updated keys to use Arrow keys for movement and jump
+        let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, w: false, s: false };
+        let gameRunning = true;
+        let gameStarted = false; // True after countdown
+        let roundTimer = ROUND_TIME;
+        let timerInterval;
+        let animationFrameId;
+        let commandBuffer = [];
+        let lastInputTime = 0;
+        let canvasMessage = '';
+        let canvasMessageTimer = 0;
+        let floatingDamageNumbers = []; // [{x, y, damage, timer}]
+        let projectiles = []; // Array to hold active projectiles
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a custom message box.
+         * @param {string} title - Message title.
+         * @param {string} message - Message content.
+         * @param {function} onClose - Callback function to be called when the message box closes.
+         */
+        function showMessageBox(title, message, onClose = () => {}) {
+            messageBoxTitle.textContent = title;
+            messageBoxContent.textContent = message;
+            messageBoxOverlay.classList.add('active');
+
+            const closeHandler = () => {
+                messageBoxOverlay.classList.remove('active');
+                messageBoxCloseButton.removeEventListener('click', closeHandler);
+                onClose();
+            };
+            messageBoxCloseButton.addEventListener('click', closeHandler);
+        }
+
+        /**
+         * Displays a game message directly on the canvas for a short duration.
+         * @param {string} message - Message to display.
+         */
+        function displayCanvasMessage(message) {
+            canvasMessage = message;
+            canvasMessageTimer = 1500; // Display for 1.5 seconds
+        }
+
+        /**
+         * Adds a floating damage number to be displayed.
+         * @param {number} x - X coordinate to display.
+         * @param {number} y - Y coordinate to display.
+         * @param {number} damage - Damage value.
+         * @param {boolean} isCrit - Whether it's a critical hit.
+         */
+        function addFloatingDamage(x, y, damage, isCrit = false) {
+            floatingDamageNumbers.push({
+                x: x,
+                y: y,
+                damage: damage,
+                timer: 1000, // Display for 1 second
+                isCrit: isCrit
+            });
+        }
+
+        // --- Drawing Functions ---
+
+        /**
+         * Draws a pixel art background on the canvas.
+         */
+        function drawPixelBackground() {
+            const pixel = 1;
+
+            // Sky (gradient)
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, '#87CEEB');
+            skyGradient.addColorStop(1, '#6A5ACD');
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Clouds (random pixels)
+            ctx.fillStyle = '#FFFFFF';
+            for (let i = 0; i < 70; i++) {
+                const cloudX = Math.floor(Math.random() * canvas.width / pixel) * pixel;
+                const cloudY = Math.floor(Math.random() * canvas.height / 3 / pixel) * pixel;
+                const cloudWidth = Math.floor(Math.random() * 8 + 3) * pixel;
+                const cloudHeight = Math.floor(Math.random() * 4 + 2) * pixel;
+                ctx.fillRect(cloudX, cloudY, cloudWidth, cloudHeight);
+            }
+
+            // Distant Mountains (darker)
+            ctx.fillStyle = '#36454F';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 80);
+            ctx.lineTo(canvas.width * 0.15, canvas.height - 130);
+            ctx.lineTo(canvas.width * 0.3, canvas.height - 90);
+            ctx.lineTo(canvas.width * 0.45, canvas.height - 150);
+            ctx.lineTo(canvas.width * 0.6, canvas.height - 100);
+            ctx.lineTo(canvas.width * 0.8, canvas.height - 140);
+            ctx.lineTo(canvas.width, canvas.height - 90);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.fill();
+
+            // Closer Mountains (lighter)
+            ctx.fillStyle = '#4B5563';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 50);
+            ctx.lineTo(canvas.width / 4, canvas.height - 100);
+            ctx.lineTo(canvas.width / 2, canvas.height - 50);
+            ctx.lineTo(canvas.width * 3 / 4, canvas.height - 120);
+            ctx.lineTo(canvas.width, canvas.height - 60);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.fill();
+
+            // Ground (green)
+            ctx.fillStyle = '#48BB78';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+
+            // Ground details (darker green pixels)
+            ctx.fillStyle = '#38A169';
+            for (let i = 0; i < 150; i++) {
+                const detailX = Math.floor(Math.random() * canvas.width / pixel) * pixel;
+                const detailY = Math.floor(Math.random() * 30 / pixel) * pixel + (canvas.height - 40);
+                ctx.fillRect(detailX, detailY, pixel, pixel);
+            }
+        }
+
+        /**
+         * Draws UI elements directly on the canvas.
+         */
+        function drawCanvasUI() {
+            const barWidth = canvas.width / 2 - 50;
+            const barHeight = 15;
+            const barY = 20;
+            const pixel = 1;
+
+            // Player 1 Health Bar
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(20, barY, barWidth, barHeight);
+            ctx.fillStyle = '#63b3ed';
+            ctx.fillRect(20, barY, barWidth * (gameManager.player1.health / MAX_HEALTH), barHeight);
+            ctx.strokeStyle = '#202020';
+            ctx.lineWidth = pixel;
+            ctx.strokeRect(20, barY, barWidth, barHeight);
+            ctx.font = `${10 * pixel}px 'Press Start 2P'`; // Smaller font for numbers
+            ctx.fillStyle = '#1a202c'; // Dark text
+            ctx.textAlign = 'center';
+            ctx.fillText(`${gameManager.player1.health.toFixed(0)}/${MAX_HEALTH}`, 20 + barWidth / 2, barY + barHeight / 2 + 4);
+
+            // Player 2 Health Bar
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(canvas.width - 20 - barWidth, barY, barWidth, barHeight);
+            ctx.fillStyle = '#f56565';
+            ctx.fillRect(canvas.width - 20 - barWidth, barY, barWidth * (gameManager.player2.health / MAX_HEALTH), barHeight);
+            ctx.strokeStyle = '#202020';
+            ctx.strokeRect(canvas.width - 20 - barWidth, barY, barWidth, barHeight);
+            ctx.fillText(`${gameManager.player2.health.toFixed(0)}/${MAX_HEALTH}`, canvas.width - 20 - barWidth / 2, barY + barHeight / 2 + 4);
+
+            // Mana Bars
+            const manaBarY = barY + barHeight + 10;
+            const manaBarHeight = 10;
+
+            // Player 1 Mana Bar
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(20, manaBarY, barWidth, manaBarHeight);
+            ctx.fillStyle = '#9f7aea';
+            ctx.fillRect(20, manaBarY, barWidth * (gameManager.player1.mana / MAX_MANA), manaBarHeight);
+            ctx.strokeStyle = '#202020';
+            ctx.strokeRect(20, manaBarY, barWidth, manaBarHeight);
+            ctx.fillText(`${gameManager.player1.mana.toFixed(0)}/${MAX_MANA}`, 20 + barWidth / 2, manaBarY + manaBarHeight / 2 + 4);
+
+            // Player 2 Mana Bar
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(canvas.width - 20 - barWidth, manaBarY, barWidth, manaBarHeight);
+            ctx.fillStyle = '#9f7aea';
+            ctx.fillRect(canvas.width - 20 - barWidth, manaBarY, barWidth * (gameManager.player2.mana / MAX_MANA), manaBarHeight);
+            ctx.strokeStyle = '#202020';
+            ctx.strokeRect(canvas.width - 20 - barWidth, manaBarY, barWidth, manaBarHeight);
+            ctx.fillText(`${gameManager.player2.mana.toFixed(0)}/${MAX_MANA}`, canvas.width - 20 - barWidth / 2, manaBarY + manaBarHeight / 2 + 4);
+
+            // Player Names
+            ctx.font = `${12 * pixel}px 'Press Start 2P'`;
+            ctx.fillStyle = '#e2e8f0';
+            ctx.textAlign = 'left';
+            ctx.fillText(gameManager.player1.name, 20, barY - 5);
+            ctx.textAlign = 'right';
+            ctx.fillText(gameManager.player2.name, canvas.width - 20, barY - 5);
+
+            // Round Timer
+            ctx.font = `${24 * pixel}px 'Press Start 2P'`;
+            ctx.fillStyle = '#ecc94b';
+            ctx.textAlign = 'center';
+            ctx.fillText(gameManager.roundTimer.toString(), canvas.width / 2, 40);
+
+            // Round Score
+            ctx.font = `${16 * pixel}px 'Press Start 2P'`;
+            ctx.fillStyle = '#e2e8f0';
+            ctx.textAlign = 'left';
+            ctx.fillText(`P1: ${gameManager.player1Score}`, 20, 100);
+            ctx.textAlign = 'right';
+            ctx.fillText(`P2: ${gameManager.player2Score}`, canvas.width - 20, 100);
+
+
+            // Canvas Message (GO!, countdown, etc.)
+            if (gameManager.canvasMessageTimer > 0) {
+                ctx.font = `${48 * pixel}px 'Press Start 2P'`;
+                ctx.fillStyle = '#ecc94b';
+                ctx.textAlign = 'center';
+                ctx.fillText(gameManager.canvasMessage, canvas.width / 2, canvas.height / 2);
+            }
+
+            // Floating Damage Numbers
+            ctx.textAlign = 'center';
+            floatingDamageNumbers.forEach(dmg => {
+                ctx.font = `${dmg.isCrit ? 18 : 14}px 'Press Start 2P'`;
+                ctx.fillStyle = dmg.isCrit ? 'yellow' : 'white';
+                ctx.fillText(dmg.damage.toFixed(0), dmg.x, dmg.y - (1000 - dmg.timer) / 20);
+            });
+        }
+
+        /**
+         * Draws a basic attack visual effect (e.g., hit spark).
+         * @param {object} target - The target player.
+         * @param {string} type - Type of attack (e.g., 'basic').
+         */
+        function drawAttackEffect(target, type) {
+            if (type === 'basic') {
+                const effectSize = 10;
+                const effectX = target.x + target.width / 2 - effectSize / 2;
+                const effectY = target.y + target.height / 2 - effectSize / 2;
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // White spark
+                ctx.fillRect(effectX, effectY, effectSize, effectSize);
+                ctx.fillStyle = 'rgba(255, 165, 0, 0.8)'; // Orange center
+                ctx.fillRect(effectX + effectSize / 4, effectY + effectSize / 4, effectSize / 2, effectSize / 2);
+            }
+        }
+
+        // Add dust effect for ground movement
+        function drawDustEffect(x, y) {
+            const pixel = 1;
+            ctx.fillStyle = 'rgba(150, 150, 150, 0.5)'; // Grayish dust
+            for (let i = 0; i < 3; i++) { // Fewer dust particles for smaller size
+                const dustX = x + (Math.random() - 0.5) * 5 * pixel; // Smaller spread
+                const dustY = y + (Math.random() - 0.5) * 2 * pixel; // Smaller vertical movement
+                ctx.fillRect(dustX, dustY, 1 * pixel, 1 * pixel); // Smaller dust particles
+            }
+        }
+
+        // --- Character Definitions ---
+        const characterDefinitions = {
+            "tungtung": {
+                id: "tungtung",
+                name: "퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르",
+                description: "야구 방망이를 휘두르는 픽셀화된 생명체, 퉁퉁한 몸집, 큰 눈, 미소 짓는 입.",
+                basicAttackDamage: 15,
+                specialMove: {
+                    name: "파동권",
+                    damage: 30,
+                    manaCost: 30,
+                    cooldown: 1500,
+                    projectile: { // Projectile properties
+                        width: 15,
+                        height: 10,
+                        speed: 8,
+                        color: 'cyan',
+                        draw: function(proj, ctx) {
+                            ctx.fillStyle = proj.color;
+                            ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
+                        }
+                    },
+                    command: ['ArrowDown', 'ArrowRight', 'w'] // Adjusted command for arrow keys
+                },
+                // Function to draw Tungtung (32x32 pixel art)
+                drawCharacter: function(player, ctx) {
+                    const x = player.x; // Use const for player.x, it's the player's actual position
+                    const y = player.y; // Use const for player.y, it's the player's actual position
+                    const pixel = 1;
+
+                    const baseColor = '#d2b48c';
+                    const darkSkin = '#a0856a';
+                    const eyeWhite = 'white';
+                    const pupilBlack = 'black';
+                    const mouthColor = '#4a2c0f';
+                    const toothColor = 'white';
+                    const batColor = '#8B4513';
+                    const outlineColor = '#202020';
+
+                    let yOffset = 0;
+                    let legOffset = 0;
+                    if ((player === gameManager.player1 && (gameManager.keys.ArrowLeft || gameManager.keys.ArrowRight)) || (player === gameManager.player2 && (Math.abs(gameManager.player1.x - gameManager.player2.x) > ATTACK_RANGE && !gameManager.player2.isGuarding))) {
+                        yOffset = Math.sin(Date.now() * 0.05) * pixel * 1;
+                        legOffset = Math.sin(Date.now() * 0.1) * pixel * 1;
+                        // Dust effect for ground movement
+                        if (!player.isJumping) { // Only show dust if on ground
+                            drawDustEffect(x + player.width / 2, y + player.height - 2);
+                        }
+                    }
+                    
+                    if (player.isWinner) {
+                        yOffset = -pixel * 5;
+                    } else if (player.isLoser) {
+                        yOffset = pixel * 5;
+                    }
+
+                    // Body
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(x + 10*pixel, y + 10*pixel + yOffset, 12*pixel, 18*pixel);
+                    ctx.fillStyle = baseColor;
+                    ctx.fillRect(x + 11*pixel, y + 11*pixel + yOffset, 10*pixel, 16*pixel);
+                    ctx.fillStyle = darkSkin;
+                    ctx.fillRect(x + 11*pixel, y + 11*pixel + yOffset, 1*pixel, 16*pixel);
+                    ctx.fillRect(x + 20*pixel, y + 11*pixel + yOffset, 1*pixel, 16*pixel);
+
+                    // Head
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(x + 12*pixel, y + 2*pixel + yOffset, 8*pixel, 8*pixel);
+                    ctx.fillStyle = baseColor;
+                    ctx.fillRect(x + 13*pixel, y + 3*pixel + yOffset, 6*pixel, 6*pixel);
+
+                    // Eyes
+                    ctx.fillStyle = eyeWhite;
+                    ctx.fillRect(x + 14*pixel, y + 4*pixel + yOffset, 2*pixel, 2*pixel);
+                    ctx.fillRect(x + 17*pixel, y + 4*pixel + yOffset, 2*pixel, 2*pixel);
+                    ctx.fillStyle = pupilBlack;
+                    ctx.fillRect(x + 15*pixel, y + 5*pixel + yOffset, 1*pixel, 1*pixel);
+                    ctx.fillRect(x + 18*pixel, y + 5*pixel + yOffset, 1*pixel, 1*pixel);
+
+                    // Mouth
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(x + 14*pixel, y + 7*pixel + yOffset, 4*pixel, 1*pixel);
+                    ctx.fillStyle = mouthColor;
+                    ctx.fillRect(x + 15*pixel, y + 7*pixel + yOffset, 2*pixel, 1*pixel);
+                    ctx.fillStyle = toothColor;
+                    ctx.fillRect(x + 15*pixel, y + 7*pixel + yOffset, 1*pixel, 1*pixel);
+                    ctx.fillRect(x + 17*pixel, y + 7*pixel + yOffset, 1*pixel, 1*pixel);
+
+                    // Arms (Attack/Guard/Idle state)
+                    ctx.fillStyle = outlineColor;
+                    if (player.isAttacking) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 20*pixel, y + 10*pixel + yOffset, 8*pixel, 3*pixel);
+                        } else {
+                            ctx.fillRect(x + 4*pixel, y + 10*pixel + yOffset, 8*pixel, 3*pixel);
+                        }
+                    } else if (player.isGuarding) {
+                        ctx.fillRect(x + 8*pixel, y + 12*pixel + yOffset, 16*pixel, 4*pixel);
+                    } else {
+                         if (player.direction === 1) {
+                            ctx.fillRect(x + 20*pixel, y + 12*pixel + yOffset, 4*pixel, 8*pixel);
+                            ctx.fillRect(x + 8*pixel, y + 14*pixel + yOffset, 4*pixel, 8*pixel);
+                        } else {
+                            ctx.fillRect(x + 8*pixel, y + 12*pixel + yOffset, 4*pixel, 8*pixel);
+                            ctx.fillRect(x + 20*pixel, y + 14*pixel + yOffset, 4*pixel, 8*pixel);
+                        }
+                    }
+                    ctx.fillStyle = baseColor;
+                    if (player.isAttacking) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 21*pixel, y + 11*pixel + yOffset, 6*pixel, 1*pixel);
+                        } else {
+                            ctx.fillRect(x + 5*pixel, y + 11*pixel + yOffset, 6*pixel, 1*pixel);
+                        }
+                    } else if (player.isGuarding) {
+                        ctx.fillRect(x + 9*pixel, y + 13*pixel + yOffset, 14*pixel, 2*pixel);
+                    } else {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 21*pixel, y + 13*pixel + yOffset, 2*pixel, 6*pixel);
+                            ctx.fillRect(x + 9*pixel, y + 15*pixel + yOffset, 2*pixel, 6*pixel);
+                        } else {
+                            ctx.fillRect(x + 9*pixel, y + 13*pixel + yOffset, 2*pixel, 6*pixel);
+                            ctx.fillRect(x + 21*pixel, y + 15*pixel + yOffset, 2*pixel, 6*pixel);
+                        }
+                    }
+
+                    // Legs
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(x + 11*pixel, y + 28*pixel + yOffset + legOffset, 4*pixel, 4*pixel);
+                    ctx.fillRect(x + 17*pixel, y + 28*pixel + yOffset - legOffset, 4*pixel, 4*pixel);
+                    ctx.fillStyle = baseColor;
+                    ctx.fillRect(x + 12*pixel, y + 29*pixel + yOffset + legOffset, 2*pixel, 2*pixel);
+                    ctx.fillRect(x + 18*pixel, y + 29*pixel + yOffset - legOffset, 2*pixel, 2*pixel);
+
+                    // Baseball bat
+                    ctx.fillStyle = outlineColor;
+                    if (player.isAttacking) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 28*pixel, y + 10*pixel + yOffset, 8*pixel, 2*pixel);
+                        } else {
+                            ctx.fillRect(x - 4*pixel, y + 10*pixel + yOffset, 8*pixel, 2*pixel);
+                        }
+                    } else if (!player.isGuarding) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 24*pixel, y + 20*pixel + yOffset, 2*pixel, 8*pixel);
+                        } else {
+                            ctx.fillRect(x + 6*pixel, y + 20*pixel + yOffset, 2*pixel, 8*pixel);
+                        }
+                    }
+                    ctx.fillStyle = batColor;
+                    if (player.isAttacking) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 29*pixel, y + 11*pixel + yOffset, 6*pixel, 1*pixel);
+                        } else {
+                            ctx.fillRect(x - 3*pixel, y + 11*pixel + yOffset, 6*pixel, 1*pixel);
+                        }
+                    } else if (!player.isGuarding) {
+                        if (player.direction === 1) {
+                            ctx.fillRect(x + 25*pixel, y + 21*pixel + yOffset, 1*pixel, 6*pixel);
+                        } else {
+                            ctx.fillRect(x + 7*pixel, y + 21*pixel + yOffset, 1*pixel, 6*pixel);
+                        }
+                    }
+
+                    // Special effects based on state (drawn on top)
+                    if (player.specialAttackActive) {
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+                        ctx.fillRect(x, y, player.width, player.height);
+                    }
+
+                    // Hit effect (drawn on top)
+                    if (player.hitEffectTimer > 0) {
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                        ctx.fillRect(x, y, player.width, player.height);
+                    }
+                }
+            },
+            "tralarero": { // New character: 트랄라레로 트랄랄라 (Shark with shoes)
+                id: "tralarero",
+                name: "트랄라레로 트랄랄라",
+                description: "파란색 운동화를 신고 있는 픽셀화된 상어. 지상에서 빠르게 움직이며 날카로운 이빨과 강력한 발차기 공격을 사용합니다.",
+                basicAttackDamage: 20, // Stronger basic attack
+                basicAttackProjectile: null, // No basic attack projectile for this character
+                specialMove: {
+                    name: "상어 돌진",
+                    damage: 35,
+                    manaCost: 35,
+                    cooldown: 1800,
+                    effectDuration: 400,
+                    drawEffect: function(player, ctx) {
+                        ctx.fillStyle = 'rgba(100, 100, 255, 0.7)'; // Blue aura for dash
+                        const auraSize = player.width * 1.5;
+                        ctx.fillRect(player.x - auraSize / 4, player.y - auraSize / 4, player.width + auraSize / 2, player.height + auraSize / 2);
+                    },
+                    command: ['ArrowRight', 'ArrowRight', 'w'] // Dash forward + Attack
+                },
+                // Function to draw Tralalaro (Shark with shoes)
+                drawCharacter: function(player, ctx) {
+                    let drawX = 0; // Relative drawing position
+                    let drawY = 0; // Relative drawing position
+                    const pixel = 1;
+
+                    const sharkBodyColor = '#63a3d2'; // Blue-grey shark body
+                    const sharkBellyColor = '#e2e8f0'; // White belly
+                    const finColor = '#4a7ea3'; // Darker blue for fins
+                    const eyeColor = 'black';
+                    const teethColor = 'white';
+                    const shoeColor = '#3b82f6'; // Bright blue shoes (Nike-like)
+                    const shoeSoleColor = '#4f46e5'; // Darker blue sole
+                    const shoeAccentColor = '#dbeafe'; // White swoosh
+                    const outlineColor = '#202020';
+
+                    let yOffset = 0;
+                    let legOffset = 0; // For shoe movement
+                    if ((player === gameManager.player1 && (gameManager.keys.ArrowLeft || gameManager.keys.ArrowRight)) || (player === gameManager.player2 && (Math.abs(gameManager.player1.x - gameManager.player2.x) > ATTACK_RANGE && !gameManager.player2.isGuarding))) {
+                        yOffset = Math.sin(Date.now() * 0.05) * pixel * 0.5; // Slightly less bobbing
+                        legOffset = Math.sin(Date.now() * 0.1) * pixel * 1; // Show leg/shoe movement
+                        if (!player.isJumping) { // Only show dust if on ground
+                            drawDustEffect(player.x + player.width / 2, player.y + player.height - 2);
+                        }
+                    }
+
+                    if (player.isWinner) {
+                        yOffset = -pixel * 5; // Jump in joy
+                    } else if (player.isLoser) {
+                        yOffset = pixel * 5; // Fall down
+                    }
+
+                    // Save context for possible flipping
+                    ctx.save();
+                    // Translate to player's center, then apply yOffset for bobbing/jump
+                    ctx.translate(player.x + player.width / 2, player.y + player.height / 2 + yOffset);
+                    // Apply horizontal flip based on direction
+                    ctx.scale(player.direction, 1);
+                    // No tilt for ground character
+
+                    // Now, draw relative to the new (0,0) which is the player's center.
+                    // So, coordinates for drawing will be relative to -player.width/2, -player.height/2
+                    drawX = -player.width / 2;
+                    drawY = -player.height / 2;
+
+
+                    // Body
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(drawX + 4*pixel, drawY + 8*pixel, 24*pixel, 14*pixel); // Main body
+                    ctx.fillStyle = sharkBodyColor;
+                    ctx.fillRect(drawX + 5*pixel, drawY + 9*pixel, 22*pixel, 12*pixel);
+                    ctx.fillStyle = sharkBellyColor;
+                    ctx.fillRect(drawX + 6*pixel, drawY + 16*pixel, 18*pixel, 4*pixel); // Belly part
+
+                    // Dorsal Fin
+                    ctx.fillStyle = outlineColor;
+                    ctx.beginPath();
+                    ctx.moveTo(drawX + 14*pixel, drawY + 8*pixel);
+                    ctx.lineTo(drawX + 16*pixel, drawY + 2*pixel);
+                    ctx.lineTo(drawX + 18*pixel, drawY + 8*pixel);
+                    ctx.fill();
+                    ctx.fillStyle = finColor;
+                    ctx.beginPath();
+                    ctx.moveTo(drawX + 15*pixel, drawY + 9*pixel);
+                    ctx.lineTo(drawX + 16*pixel, drawY + 3*pixel);
+                    ctx.lineTo(drawX + 17*pixel, drawY + 9*pixel);
+                    ctx.fill();
+
+                    // Tail Fin
+                    ctx.fillStyle = outlineColor;
+                    ctx.beginPath();
+                    ctx.moveTo(drawX + 27*pixel, drawY + 10*pixel);
+                    ctx.lineTo(drawX + 30*pixel, drawY + 6*pixel);
+                    ctx.lineTo(drawX + 28*pixel, drawY + 14*pixel);
+                    ctx.lineTo(drawX + 30*pixel, drawY + 18*pixel);
+                    ctx.fill();
+                    ctx.fillStyle = finColor;
+                    ctx.beginPath();
+                    ctx.moveTo(drawX + 28*pixel, drawY + 11*pixel);
+                    ctx.lineTo(drawX + 29*pixel, drawY + 7*pixel);
+                    ctx.lineTo(drawX + 29*pixel, drawY + 13*pixel);
+                    ctx.lineTo(drawX + 29*pixel, drawY + 17*pixel);
+                    ctx.fill();
+
+                    // Mouth and eye
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(drawX + 2*pixel, drawY + 11*pixel, 4*pixel, 2*pixel); // Mouth outline
+                    ctx.fillStyle = sharkBellyColor;
+                    ctx.fillRect(drawX + 3*pixel, drawY + 12*pixel, 2*pixel, 1*pixel); // Mouth interior
+                    ctx.fillStyle = teethColor; // Teeth
+                    ctx.fillRect(drawX + 3*pixel, drawY + 11*pixel, 1*pixel, 1*pixel);
+                    ctx.fillRect(drawX + 4*pixel, drawY + 11*pixel, 1*pixel, 1*pixel);
+
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(drawX + 7*pixel, drawY + 10*pixel, 2*pixel, 2*pixel); // Eye outline
+                    ctx.fillStyle = eyeColor;
+                    ctx.fillRect(drawX + 8*pixel, drawY + 11*pixel, 1*pixel, 1*pixel); // Pupil
+
+                    // Front Shoes
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(drawX + 8*pixel, drawY + 20*pixel + legOffset, 6*pixel, 4*pixel); // Shoe body outline
+                    ctx.fillStyle = shoeColor;
+                    ctx.fillRect(drawX + 9*pixel, drawY + 21*pixel + legOffset, 4*pixel, 2*pixel); // Shoe body
+                    ctx.fillStyle = shoeSoleColor;
+                    ctx.fillRect(drawX + 8*pixel, drawY + 23*pixel + legOffset, 6*pixel, 1*pixel); // Shoe sole
+                    ctx.fillStyle = shoeAccentColor;
+                    ctx.fillRect(drawX + 11*pixel, drawY + 21*pixel + legOffset, 2*pixel, 1*pixel); // Swoosh
+
+                    // Back Shoes (slightly offset for animation)
+                    ctx.fillStyle = outlineColor;
+                    ctx.fillRect(drawX + 18*pixel, drawY + 20*pixel - legOffset, 6*pixel, 4*pixel); // Shoe body outline
+                    ctx.fillStyle = shoeColor;
+                    ctx.fillRect(drawX + 19*pixel, drawY + 21*pixel - legOffset, 4*pixel, 2*pixel); // Shoe body
+                    ctx.fillStyle = shoeSoleColor;
+                    ctx.fillRect(drawX + 18*pixel, drawY + 23*pixel - legOffset, 6*pixel, 1*pixel); // Shoe sole
+                    ctx.fillStyle = shoeAccentColor;
+                    ctx.fillRect(drawX + 21*pixel, drawY + 21*pixel - legOffset, 2*pixel, 1*pixel); // Swoosh
+
+                    // Restore context (important for camera logic)
+                    ctx.restore();
+
+                    // Special effects based on state (drawn on top)
+                    if (player.specialAttackActive) {
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.7)';
+                        ctx.fillRect(player.x, player.y, player.width, player.height);
+                    }
+
+                    // Hit effect (drawn on top)
+                    if (player.hitEffectTimer > 0) {
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+                        ctx.fillRect(player.x, player.y, player.width, player.height);
+                    }
+                }
+            }
+        };
+
+        // --- Projectile Class ---
+        class Projectile {
+            constructor(x, y, width, height, speed, direction, damage, owner, drawFunc) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.speed = speed;
+                this.direction = direction; // 1: right, -1: left, 0: down (for Tralalaro's basic attack)
+                this.damage = damage;
+                this.owner = owner; // Reference to the player who fired it
+                this.drawFunc = drawFunc;
+                this.active = true;
+            }
+
+            update() {
+                if (this.direction === 0) { // Downward projectile (Tralalaro's basic attack - if it had one)
+                    this.y += this.speed;
+                    // Check collision with ground
+                    if (this.y + this.height >= GROUND_Y) {
+                        this.active = false;
+                        // For bomb hitting ground, create a small effect or damage nearby
+                        gameManager.addFloatingDamage(this.x, GROUND_Y, this.damage * 0.5, false); // Small splash damage visual
+                        shakeScreen(); // Shake screen on bomb impact
+                    }
+                } else { // Horizontal projectile (Tungtung's Hadouken)
+                    this.x += this.speed * this.direction;
+                }
+
+                // Deactivate if out of horizontal bounds
+                if (this.x < -this.width || this.x > canvas.width) {
+                    this.active = false;
+                }
+            }
+
+            draw() {
+                if (this.active) {
+                    this.drawFunc(this, ctx);
+                }
+            }
+        }
+
+        // --- GameManager Class ---
+        class GameManager {
+            constructor() {
+                this.player1 = {};
+                this.player2 = {};
+                this.keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, w: false, s: false };
+                this.gameRunning = true;
+                this.gameStarted = false;
+                this.roundTimer = ROUND_TIME;
+                this.timerInterval = null;
+                this.animationFrameId = null;
+                this.commandBuffer = [];
+                this.lastInputTime = 0;
+                this.canvasMessage = '';
+                this.canvasMessageTimer = 0;
+                this.floatingDamageNumbers = [];
+                this.projectiles = [];
+                this.currentRound = 1;
+                this.player1Score = 0;
+                this.player2Score = 0;
+                this.selectedCharacterId = null; // Track selected character for lore generation
+
+                // Camera state
+                this.cameraX = canvas.width / 2;
+                this.cameraY = canvas.height / 2;
+                this.cameraZoom = MIN_ZOOM;
+            }
+
+            /**
+             * Displays a game message directly on the canvas for a short duration.
+             * @param {string} message - Message to display.
+             */
+            displayCanvasMessage(message) {
+                this.canvasMessage = message;
+                this.canvasMessageTimer = 1500; // Display for 1.5 seconds
+            }
+
+            /**
+             * Adds a floating damage number to be displayed.
+             * @param {number} x - X coordinate to display.
+             * @param {number} y - Y coordinate to display.
+             * @param {number} damage - Damage value.
+             * @param {boolean} isCrit - Whether it's a critical hit.
+             */
+            addFloatingDamage(x, y, damage, isCrit = false) {
+                this.floatingDamageNumbers.push({
+                    x: x,
+                    y: y,
+                    damage: damage,
+                    timer: 1000, // Display for 1 second
+                    isCrit: isCrit
+                });
+            }
+
+            /**
+             * Initializes player data based on character selection.
+             * @param {string} player1CharId - ID of the character selected by Player 1.
+             */
+            initPlayers(player1CharId) {
+                const player1Data = characterDefinitions[player1CharId];
+                // Changed opponent to tralalaro
+                const player2CharId = (player1CharId === "tungtung") ? "tralarero" : "tungtung";
+                const player2Data = characterDefinitions[player2CharId];
+
+                this.player1 = {
+                    ...player1Data,
+                    x: 100,
+                    y: GROUND_Y, // Tungtung starts on the ground
+                    width: PLAYER_WIDTH,
+                    height: PLAYER_HEIGHT,
+                    health: MAX_HEALTH,
+                    mana: MAX_MANA,
+                    isAttacking: false,
+                    attackCooldown: 0,
+                    direction: 1, // Facing right
+                    hitEffectTimer: 0,
+                    isGuarding: false,
+                    isWinner: false,
+                    isLoser: false,
+                    isJumping: false, // New: for Tungtung's jump state
+                    velocityY: 0, // New: for Tungtung's vertical velocity
+                    groundY: GROUND_Y, // New: Tungtung's ground level
+                    specialMove: {
+                        ...player1Data.specialMove,
+                        command: player1Data.specialMove.command ? [...player1Data.specialMove.command] : []
+                    }
+                };
+
+                this.player2 = {
+                    ...player2Data,
+                    x: canvas.width - 100 - PLAYER_WIDTH,
+                    y: GROUND_Y, // Tralalaro also starts on the ground
+                    width: PLAYER_WIDTH,
+                    height: PLAYER_HEIGHT,
+                    health: MAX_HEALTH,
+                    mana: MAX_MANA,
+                    isAttacking: false,
+                    attackCooldown: 0,
+                    direction: -1, // Facing left
+                    isAI: true,
+                    aiActionTimer: 0,
+                    hitEffectTimer: 0,
+                    isGuarding: false,
+                    aiGuardTimer: 0,
+                    isWinner: false,
+                    isLoser: false,
+                    isJumping: false, // Tralalaro also has jump
+                    velocityY: 0,
+                    groundY: GROUND_Y,
+                    specialMove: {
+                        ...player2Data.specialMove,
+                        command: player2Data.specialMove.command ? [...player2Data.specialMove.command] : []
+                    }
+                };
+            }
+
+            /**
+             * Starts a new round, resetting player health/mana and positions.
+             */
+            startNewRound() {
+                this.player1.health = MAX_HEALTH;
+                this.player1.mana = MAX_MANA;
+                this.player1.x = 100;
+                this.player1.y = GROUND_Y; // Reset Tungtung to ground
+                this.player1.isJumping = false;
+                this.player1.velocityY = 0;
+                this.player1.isAttacking = false;
+                this.player1.isGuarding = false;
+                this.player1.specialAttackActive = false;
+                this.player1.hitEffectTimer = 0;
+                this.player1.isWinner = false;
+                this.player1.isLoser = false;
+
+                this.player2.health = MAX_HEALTH;
+                this.player2.mana = MAX_MANA;
+                this.player2.x = canvas.width - 100 - PLAYER_WIDTH;
+                this.player2.y = GROUND_Y; // Reset Tralalaro to ground
+                this.player2.isJumping = false;
+                this.player2.velocityY = 0;
+                this.player2.isAttacking = false;
+                this.player2.isGuarding = false;
+                this.player2.specialAttackActive = false;
+                this.player2.hitEffectTimer = 0;
+                this.player2.isWinner = false;
+                this.player2.isLoser = false;
+                this.player2.aiGuardTimer = 0;
+                this.player2.aiActionTimer = 0;
+
+                this.roundTimer = ROUND_TIME;
+                this.canvasMessage = '';
+                this.canvasMessageTimer = 0;
+                this.floatingDamageNumbers = [];
+                this.projectiles = [];
+                this.commandBuffer = [];
+                this.lastInputTime = 0;
+                this.gameStarted = false; // Reset gameStarted for countdown
+
+                // Reset camera for new round
+                this.cameraX = canvas.width / 2;
+                this.cameraY = canvas.height / 2;
+                this.cameraZoom = MIN_ZOOM;
+
+                // Start countdown for new round
+                let countdownValue = 3;
+                this.displayCanvasMessage(`ROUND ${this.currentRound}`);
+                setTimeout(() => {
+                    const countdownInterval = setInterval(() => {
+                        if (countdownValue > 0) {
+                            this.displayCanvasMessage(countdownValue.toString());
+                            countdownValue--;
+                        } else {
+                            clearInterval(countdownInterval);
+                            this.displayCanvasMessage("FIGHT!");
+                            this.gameStarted = true;
+                            this.timerInterval = setInterval(() => this.updateRoundTimer(), 1000);
+                        }
+                    }, 1000);
+                }, 1500); // Display "ROUND X" for 1.5 seconds, then start countdown
+            }
+
+
+            /**
+             * Starts the countdown and then the game.
+             * @param {string} player1CharId - ID of the character selected by Player 1.
+             */
+            async startCountdownAndGame(player1CharId) {
+                this.initPlayers(player1CharId);
+
+                // Hide lore generation elements
+                generateLoreButton.style.display = 'none';
+                characterLoreDisplay.style.display = 'none';
+                characterLoreDisplay.textContent = ''; // Clear previous lore
+
+                // Update special moves list for player 1
+                if (this.player1.specialMove && this.player1.specialMove.command) {
+                    let movesHtml = `<strong>${this.player1.name} 특수 기술:</strong><br>`;
+                    // Update command display for arrow keys
+                    movesHtml += `${this.player1.specialMove.name}: ${this.player1.specialMove.command.map(k => {
+                        if (k === 'ArrowLeft') return '←';
+                        if (k === 'ArrowRight') return '→';
+                        if (k === 'ArrowUp') return '↑';
+                        if (k === 'ArrowDown') return '↓';
+                        return k.toUpperCase();
+                    }).join(' → ')} + W (공격)<br>`;
+                    specialMovesListElement.innerHTML = movesHtml;
+                } else {
+                    specialMovesListElement.innerHTML = `<strong>특수 기술 정보 없음.</strong>`;
+                }
+
+                characterSelectionScreen.style.display = 'none';
+                gameContainer.style.display = 'flex';
+
+                // Initial drawing to show characters before countdown
+                drawPixelBackground();
+                drawPlayer(this.player1);
+                drawPlayer(this.player2);
+                this.drawUI();
+
+                this.currentRound = 1;
+                this.player1Score = 0;
+                this.player2Score = 0;
+                this.startNewRound(); // Start the first round
+                
+                this.gameRunning = true;
+                this.gameLoop();
+            }
+
+            /**
+             * Resets game state and prepares for a new game.
+             */
+            resetGame() {
+                gameContainer.style.display = 'none';
+                characterSelectionScreen.style.display = 'flex';
+
+                this.player1 = {};
+                this.player2 = {};
+                this.keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, w: false, s: false }; // Reset keys state
+                this.gameRunning = false;
+                this.gameStarted = false;
+                clearInterval(this.timerInterval);
+                cancelAnimationFrame(this.animationFrameId);
+                this.roundTimer = ROUND_TIME;
+                this.canvasMessage = '';
+                this.canvasMessageTimer = 0;
+                this.floatingDamageNumbers = [];
+                this.projectiles = [];
+                this.commandBuffer = [];
+                this.lastInputTime = 0;
+                this.currentRound = 1;
+                this.player1Score = 0;
+                this.player2Score = 0;
+                this.selectedCharacterId = null; // Clear selected character
+                generateLoreButton.style.display = 'none'; // Hide lore button
+                characterLoreDisplay.style.display = 'none'; // Hide lore display
+                characterLoreDisplay.textContent = ''; // Clear lore text
+
+                // Reset camera state
+                this.cameraX = canvas.width / 2;
+                this.cameraY = canvas.height / 2;
+                this.cameraZoom = MIN_ZOOM;
+            }
+
+            /**
+             * Handles player attacks (basic and special moves).
+             * @param {object} attacker - Attacking player.
+             * @param {object} target - Target player.
+             * @param {object} [move] - Special move object if applicable.
+             */
+            handleAttack(attacker, target, move = null) {
+                const damage = move ? move.damage : attacker.basicAttackDamage;
+                const manaCost = move ? move.manaCost : 0;
+                const cooldown = move ? move.cooldown : BASIC_ATTACK_COOLDOWN;
+                const attackName = move ? move.name : "기본 공격";
+
+                if (attacker.attackCooldown > 0) {
+                    if (move) this.displayCanvasMessage(`${attacker.name}: ${attackName} 쿨다운 중!`);
+                    return;
+                }
+
+                if (move && attacker.mana < manaCost) {
+                    this.displayCanvasMessage(`${attacker.name}: ${attackName} 마나가 부족합니다!`);
+                    return;
+                }
+
+                attacker.isAttacking = true;
+                attacker.attackCooldown = cooldown;
+                attacker.specialAttackActive = move ? attackName : false;
+                
+                if (move) {
+                    attacker.mana -= manaCost;
+                }
+
+                // If it's a projectile-based basic attack (Tralalaro's basic bomb)
+                if (!move && attacker.basicAttackProjectile) {
+                    const projX = attacker.x + attacker.width / 2 - attacker.basicAttackProjectile.width / 2;
+                    const projY = attacker.y + attacker.height; // Drop from below the bomber
+                    const newProjectile = new Projectile(
+                        projX, projY,
+                        attacker.basicAttackProjectile.width, attacker.basicAttackProjectile.height,
+                        attacker.basicAttackProjectile.speed, 0, // Direction 0 means straight down
+                        attacker.basicAttackDamage, attacker,
+                        attacker.basicAttackProjectile.draw
+                    );
+                    this.projectiles.push(newProjectile);
+                }
+                // If it's a special move with a projectile (Tungtung's Hadouken)
+                else if (move && move.projectile) {
+                    const projX = attacker.direction === 1 ? attacker.x + attacker.width : attacker.x - move.projectile.width;
+                    const projY = attacker.y + attacker.height / 2 - move.projectile.height / 2;
+                    const newProjectile = new Projectile(
+                        projX, projY,
+                        move.projectile.width, move.projectile.height,
+                        move.projectile.speed, attacker.direction,
+                        move.damage, attacker,
+                        move.projectile.draw
+                    );
+                    this.projectiles.push(newProjectile);
+                }
+
+
+                setTimeout(() => {
+                    attacker.isAttacking = false;
+                    attacker.specialAttackActive = false;
+                }, move ? move.effectDuration : 150); // Use move's effect duration or default
+
+                // Collision detection for non-projectile attacks
+                // This part handles Tungtung's basic melee attack and Tralalaro's special attack (dash/lunge)
+                if (!move || (!move.projectile && !attacker.basicAttackProjectile)) { // Only check collision here if not a projectile
+                    let finalDamage = damage;
+                    let hit = false;
+
+                    if (move && move.name === "상어 돌진") { // Tralalaro's special attack (dash/lunge)
+                        const dashRange = PLAYER_WIDTH * 1.5;
+                        const targetCenterX = target.x + target.width / 2;
+                        const attackerCenterX = attacker.x + attacker.width / 2;
+
+                        if (Math.abs(attackerCenterX - targetCenterX) < dashRange &&
+                            attacker.y < target.y + target.height &&
+                            attacker.y + attacker.height > target.y) {
+                            hit = true;
+                        }
+                    } else if (!attacker.basicAttackProjectile) { // Tungtung's basic attack (melee)
+                        let attackHitboxXStart;
+                        let attackHitboxXEnd;
+
+                        if (attacker.direction === 1) {
+                            attackHitboxXStart = attacker.x + attacker.width;
+                            attackHitboxXEnd = attacker.x + attacker.width + ATTACK_RANGE;
+                        } else {
+                            attackHitboxXStart = attacker.x - ATTACK_RANGE;
+                            attackHitboxXEnd = attacker.x;
+                        }
+
+                        if (attackHitboxXEnd > target.x &&
+                            attackHitboxXStart < target.x + target.width &&
+                            attacker.y < target.y + target.height &&
+                            attacker.y + attacker.height > target.y) {
+                            hit = true;
+                        }
+                    }
+
+                    if (hit) {
+                        if (target.isGuarding) {
+                            finalDamage *= GUARD_DAMAGE_REDUCTION_FACTOR;
+                            this.displayCanvasMessage(`${target.name}이(가) 공격을 막았습니다!`);
+                        }
+                        target.health -= finalDamage;
+                        if (target.health < 0) target.health = 0;
+                        this.displayCanvasMessage(`${attacker.name}이(가) ${target.name}에게 ${finalDamage.toFixed(0)} 피해를 입혔습니다! (${attackName})`);
+                        this.addFloatingDamage(target.x + target.width / 2, target.y, finalDamage, finalDamage > damage * 0.8);
+                        shakeScreen();
+                        target.hitEffectTimer = HIT_EFFECT_DURATION;
+                        if (!move && !attacker.basicAttackProjectile) { // Only draw basic attack effect if it's a basic melee attack
+                            drawAttackEffect(target, 'basic');
+                        }
+                    } else if (move && !move.projectile && !attacker.basicAttackProjectile) {
+                        this.displayCanvasMessage(`${attacker.name}의 ${attackName}이(가) 빗나갔습니다!`);
+                    }
+                }
+            }
+
+            /**
+             * Checks the command input buffer for special move activation.
+             * @param {object} player - Player object.
+             * @param {object} target - Target player object.
+             */
+            checkSpecialMoveCommand(player, target) {
+                const now = Date.now();
+                this.commandBuffer = this.commandBuffer.filter(input => (now - input.timestamp) < COMMAND_WINDOW);
+
+                if (this.commandBuffer.length === 0) return;
+
+                const specialMove = player.specialMove;
+                if (!specialMove || !specialMove.command) return;
+
+                const requiredCommand = specialMove.command;
+
+                if (this.commandBuffer.length >= requiredCommand.length) {
+                    let match = true;
+                    for (let i = 0; i < requiredCommand.length; i++) {
+                        const bufferIndex = this.commandBuffer.length - requiredCommand.length + i;
+                        if (this.commandBuffer[bufferIndex].key !== requiredCommand[i]) {
+                            match = false;
+                            break;
+                        }
+                    }
+
+                    if (match) {
+                        // Check if player is on ground for ground-based special moves
+                        if (player.id === "tungtung" && player.isJumping) {
+                            this.displayCanvasMessage(`${player.name}: 공중에서는 파동권을 사용할 수 없습니다!`); // Custom message
+                            return;
+                        }
+                        // Tralalaro's Dash requires not jumping
+                        if (player.id === "tralarero" && player.isJumping) {
+                            this.displayCanvasMessage(`${player.name}: 공중에서는 돌진을 사용할 수 없습니다!`);
+                            return;
+                        }
+
+                        this.handleAttack(player, target, specialMove);
+                        this.commandBuffer = [];
+                    }
+                }
+            }
+
+            /**
+             * Handles Player 2 (AI) logic.
+             */
+            handleAILogic() {
+                if (!this.player2.isAI || !this.gameRunning || !this.gameStarted) return;
+
+                const distanceX = Math.abs(this.player1.x - this.player2.x);
+                const distanceY = Math.abs(this.player1.y - this.player2.y);
+                const basicAttackRange = PLAYER_WIDTH * 1.5; // Tralalaro's melee basic attack range
+
+                // AI Guard logic
+                if (this.player1.isAttacking && distanceX < PLAYER_WIDTH * 2 && Math.random() < AI_GUARD_CHANCE && !this.player2.isGuarding) {
+                    this.player2.isGuarding = true;
+                    this.player2.aiGuardTimer = AI_GUARD_DURATION;
+                }
+
+                if (this.player2.aiGuardTimer > 0) {
+                    this.player2.aiGuardTimer -= 1000 / 60;
+                    if (this.player2.aiGuardTimer <= 0) {
+                        this.player2.isGuarding = false;
+                    }
+                }
+
+                // AI cannot move or attack while guarding
+                if (this.player2.isGuarding) {
+                    this.player2.aiActionTimer = 0;
+                    return;
+                }
+
+                // AI decision making (Tralalaro specific AI - Ground based)
+                if (this.player2.aiActionTimer <= 0) {
+                    this.player2.aiActionTimer = Math.random() * 500 + 300; // Random delay for next action
+
+                    // Prioritize special move (dash) if mana and cooldown allow and in good range
+                    if (distanceX < canvas.width / 3 && this.player2.attackCooldown <= 0 && this.player2.mana >= this.player2.specialMove.manaCost && Math.random() < 0.4 && !this.player2.isJumping) {
+                        this.handleAttack(this.player2, this.player1, this.player2.specialMove);
+                    }
+                    // Basic attack if in range
+                    else if (distanceX < basicAttackRange && this.player2.attackCooldown <= 0 && !this.player2.isAttacking && !this.player2.isJumping) {
+                        this.handleAttack(this.player2, this.player1);
+                    }
+                    // Move horizontally towards player
+                    else {
+                        if (this.player1.x < this.player2.x) {
+                            this.player2.x -= PLAYER_SPEED;
+                            this.player2.direction = -1;
+                        } else if (this.player1.x > this.player2.x) {
+                            this.player2.x += PLAYER_SPEED;
+                            this.player2.direction = 1;
+                        }
+
+                        // AI Jump logic to follow player's vertical movement or avoid attacks
+                        if (this.player2.y === this.player2.groundY) { // Only jump if on ground
+                            if (this.player1.isJumping || (distanceY > PLAYER_HEIGHT * 0.8 && Math.random() < 0.2) || this.projectiles.some(p => p.owner === this.player1 && Math.abs(p.x - this.player2.x) < PLAYER_WIDTH * 2 && p.y > this.player2.y - 10)) { // Jump to avoid projectiles
+                                this.player2.isJumping = true;
+                                this.player2.velocityY = JUMP_VELOCITY;
+                            }
+                        }
+                    }
+                } else {
+                    this.player2.aiActionTimer -= 1000 / 60;
+                }
+
+                // Apply gravity to AI if jumping
+                if (this.player2.isJumping) {
+                    this.player2.y += this.player2.velocityY;
+                    this.player2.velocityY += GRAVITY;
+                    if (this.player2.y >= this.player2.groundY) {
+                        this.player2.y = this.player2.groundY;
+                        this.player2.isJumping = false;
+                        this.player2.velocityY = 0;
+                    }
+                }
+            }
+
+            /**
+             * Updates the round timer.
+             */
+            updateRoundTimer() {
+                this.roundTimer--;
+
+                if (this.roundTimer <= 0) {
+                    clearInterval(this.timerInterval);
+                    this.gameRunning = false;
+                    let winner = null;
+                    if (this.player1.health > this.player2.health) {
+                        winner = this.player1;
+                        this.player1Score++;
+                    } else if (this.player2.health > this.player1.health) {
+                        winner = this.player2;
+                        this.player2Score++;
+                    }
+
+                    if (winner) {
+                        winner.isWinner = true;
+                        (winner === this.player1 ? this.player2 : this.player1).isLoser = true;
+                        this.displayCanvasMessage("KO!"); // Display KO message
+                    } else {
+                        this.displayCanvasMessage("무승부!");
+                    }
+
+                    setTimeout(() => {
+                        if (this.player1Score >= MAX_ROUNDS || this.player2Score >= MAX_ROUNDS) {
+                            const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
+                            showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame());
+                        } else {
+                            this.currentRound++;
+                            this.startNewRound();
+                        }
+                    }, 2000); // Wait 2 seconds before next round or game over
+                }
+            }
+
+            /**
+             * Updates all game elements.
+             */
+            update() {
+                if (!this.gameStarted) return;
+
+                // Mana regeneration
+                this.player1.mana = Math.min(MAX_MANA, this.player1.mana + (MANA_REGEN_RATE_PER_SECOND / 60));
+                this.player2.mana = Math.min(MAX_MANA, this.player2.mana + (MANA_REGEN_RATE_PER_SECOND / 60));
+
+                // Player 1 movement (cannot move while guarding)
+                if (!this.player1.isGuarding && !this.player1.isLoser && !this.player1.isWinner) {
+                    if (this.keys.ArrowLeft) {
+                        this.player1.x -= PLAYER_SPEED;
+                        this.player1.direction = -1;
+                    }
+                    if (this.keys.ArrowRight) {
+                        this.player1.x += PLAYER_SPEED;
+                        this.player1.direction = 1;
+                    }
+                    // Jump logic for Tungtung
+                    if (this.keys.ArrowUp && !this.player1.isJumping && this.player1.y === this.player1.groundY) { // Only jump if on ground
+                        this.player1.isJumping = true;
+                        this.player1.velocityY = JUMP_VELOCITY;
+                    }
+                }
+
+                // Apply gravity to Tungtung if jumping
+                if (this.player1.isJumping) {
+                    this.player1.y += this.player1.velocityY;
+                    this.player1.velocityY += GRAVITY;
+                    // Prevent falling through ground
+                    if (this.player1.y >= this.player1.groundY) {
+                        this.player1.y = this.player1.groundY;
+                        this.player1.isJumping = false;
+                        this.player1.velocityY = 0;
+                    }
+                }
+
+
+                // Keep players within canvas bounds
+                this.player1.x = Math.max(0, Math.min(canvas.width - this.player1.width, this.player1.x));
+                this.player2.x = Math.max(0, Math.min(canvas.width - this.player2.width, this.player2.x));
+                // Clamp Tralalaro's vertical position
+                this.player2.y = Math.max(TRALALARO_MIN_Y, Math.min(TRALALARO_MAX_Y, this.player2.y));
+
+
+                // Update cooldowns
+                if (this.player1.attackCooldown > 0) {
+                    this.player1.attackCooldown -= 1000 / 60;
+                }
+                if (this.player2.attackCooldown > 0) {
+                    this.player2.attackCooldown -= 1000 / 60;
+                }
+
+                // Update hit effect timers
+                if (this.player1.hitEffectTimer > 0) {
+                    this.player1.hitEffectTimer -= 1000 / 60;
+                }
+                if (this.player2.hitEffectTimer > 0) {
+                    this.player2.hitEffectTimer -= 1000 / 60;
+                }
+
+                // Handle AI logic
+                this.handleAILogic();
+
+                // Update projectiles
+                this.projectiles.forEach(proj => {
+                    proj.update();
+                    // Check projectile-player collision
+                    const target = proj.owner === this.player1 ? this.player2 : this.player1;
+                    if (proj.active &&
+                        proj.x < target.x + target.width &&
+                        proj.x + proj.width > target.x &&
+                        proj.y < target.y + target.height &&
+                        proj.y + proj.height > target.y) {
+                        
+                        let finalDamage = proj.damage;
+                        if (target.isGuarding) {
+                            finalDamage *= GUARD_DAMAGE_REDUCTION_FACTOR;
+                            this.displayCanvasMessage(`${target.name}이(가) 공격을 막았습니다!`);
+                        }
+                        target.health -= finalDamage;
+                        if (target.health < 0) target.health = 0;
+                        this.displayCanvasMessage(`${proj.owner.name}이(가) ${target.name}에게 ${finalDamage.toFixed(0)} 피해를 입혔습니다! (${proj.owner.specialMove.name || '기본 공격'})`); // Handle basic attack projectiles
+                        this.addFloatingDamage(target.x + target.width / 2, target.y, finalDamage, finalDamage > proj.damage * 0.8);
+                        shakeScreen();
+                        target.hitEffectTimer = HIT_EFFECT_DURATION;
+                        proj.active = false; // Deactivate projectile on hit
+                    }
+                });
+                this.projectiles = this.projectiles.filter(proj => proj.active); // Remove inactive projectiles
+
+                // Update floating damage numbers
+                this.floatingDamageNumbers.forEach(dmg => {
+                    dmg.timer -= 1000 / 60;
+                });
+                this.floatingDamageNumbers = this.floatingDamageNumbers.filter(dmg => dmg.timer > 0);
+
+                // Check for round/game over conditions (health based)
+                if (this.player1.health <= 0 || this.player2.health <= 0) {
+                    clearInterval(this.timerInterval); // Stop round timer
+                    this.gameStarted = false; // Pause game logic
+                    this.gameRunning = false; // Stop main loop temporarily for KO animation
+
+                    let winner = null;
+                    if (this.player1.health <= 0 && this.player2.health <= 0) {
+                        this.displayCanvasMessage("더블 KO!");
+                    } else if (this.player1.health <= 0) {
+                        winner = this.player2;
+                        this.player1.isLoser = true;
+                        this.player2.isWinner = true;
+                        this.player2Score++;
+                        this.displayCanvasMessage("KO!");
+                    } else if (this.player2.health <= 0) {
+                        winner = this.player1;
+                        this.player2.isLoser = true;
+                        this.player1.isWinner = true;
+                        this.player1Score++;
+                        this.displayCanvasMessage("KO!");
+                    }
+
+                    setTimeout(() => {
+                        if (this.player1Score >= MAX_ROUNDS || this.player2Score >= MAX_ROUNDS) {
+                            const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
+                            showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame());
+                        } else {
+                            this.currentRound++;
+                            this.startNewRound();
+                        }
+                    }, 2000); // Wait 2 seconds before next round or game over
+                }
+            }
+
+            /**
+             * Draws all game elements.
+             */
+            draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawPixelBackground();
+
+                // --- Camera Transform ---
+                ctx.save();
+
+                // Calculate midpoint between players
+                const midpointX = (this.player1.x + this.player1.width / 2 + this.player2.x + this.player2.width / 2) / 2;
+                // Since both are ground-based, fix Y slightly above ground level or average their Y if jumping
+                const midpointY = (this.player1.y + this.player1.height / 2 + this.player2.y + this.player2.height / 2) / 2;
+                const fixedCameraY = GROUND_Y - (canvas.height * 0.2); // Fixed height to keep ground and jump space visible
+
+                // Calculate required zoom based on player distance
+                const playersLeft = Math.min(this.player1.x, this.player2.x);
+                const playersRight = Math.max(this.player1.x + this.player1.width, this.player2.x + this.player2.width);
+                // For vertical extent, consider the lowest point (ground) and the highest point (jump apex)
+                const playersTop = Math.min(this.player1.y, this.player2.y);
+                const playersBottom = GROUND_Y + PLAYER_HEIGHT; // Always includes ground
+
+                const requiredWidth = playersRight - playersLeft + CAMERA_BUFFER_X;
+                const requiredHeight = (playersBottom - playersTop) + CAMERA_BUFFER_Y; // Includes jump height
+
+                let targetZoomX = canvas.width / requiredWidth;
+                let targetZoomY = canvas.height / requiredHeight;
+                let targetZoom = Math.min(targetZoomX, targetZoomY); // Use the smaller zoom to fit both dimensions
+                
+                // Clamp zoom level
+                targetZoom = Math.max(MAX_ZOOM, Math.min(MIN_ZOOM, targetZoom));
+
+                // Smoothly interpolate camera position and zoom
+                this.cameraX += (midpointX - this.cameraX) * CAMERA_PAN_SPEED;
+                // Blend current midpointY with fixedCameraY or simply use fixedCameraY if characters are mostly on ground
+                this.cameraY += (midpointY - this.cameraY) * CAMERA_PAN_SPEED; // Keep following midpointY, but it will be clamped by character movement
+                this.cameraZoom += (targetZoom - this.cameraZoom) * CAMERA_ZOOM_SPEED;
+
+                // Apply transforms: translate to center, scale, then translate by inverse camera position
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(this.cameraZoom, this.cameraZoom);
+                ctx.translate(-this.cameraX, -this.cameraY);
+
+                // --- Draw Game Elements (affected by camera) ---
+                drawPlayer(this.player1);
+                drawPlayer(this.player2);
+
+                // Draw special move effects (non-projectile)
+                if (this.player1.specialAttackActive && this.player1.specialMove.drawEffect && !this.player1.specialMove.projectile) {
+                    this.player1.specialMove.drawEffect(this.player1, ctx);
+                }
+                if (this.player2.specialAttackActive && this.player2.specialMove.drawEffect && !this.player2.specialMove.projectile) {
+                    this.player2.specialMove.drawEffect(this.player2, ctx);
+                }
+
+                // Draw projectiles
+                this.projectiles.forEach(proj => proj.draw());
+
+                // Restore context to draw UI not affected by camera
+                ctx.restore();
+
+                // --- Draw UI Elements (not affected by camera) ---
+                this.drawUI();
+            }
+
+            /**
+             * Draws UI elements on canvas.
+             */
+            drawUI() {
+                const barWidth = canvas.width / 2 - 50;
+                const barHeight = 15;
+                const barY = 20;
+                const pixel = 1;
+
+                // Player 1 Health Bar
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(20, barY, barWidth, barHeight);
+                ctx.fillStyle = '#63b3ed';
+                ctx.fillRect(20, barY, barWidth * (this.player1.health / MAX_HEALTH), barHeight);
+                ctx.strokeStyle = '#202020';
+                ctx.lineWidth = pixel;
+                ctx.strokeRect(20, barY, barWidth, barHeight);
+                ctx.font = `${10 * pixel}px 'Press Start 2P'`;
+                ctx.fillStyle = '#1a202c';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${this.player1.health.toFixed(0)}/${MAX_HEALTH}`, 20 + barWidth / 2, barY + barHeight / 2 + 4);
+
+                // Player 2 Health Bar
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(canvas.width - 20 - barWidth, barY, barWidth, barHeight);
+                ctx.fillStyle = '#f56565';
+                ctx.fillRect(canvas.width - 20 - barWidth, barY, barWidth * (this.player2.health / MAX_HEALTH), barHeight);
+                ctx.strokeStyle = '#202020';
+                ctx.strokeRect(canvas.width - 20 - barWidth, barY, barWidth, barHeight);
+                ctx.fillText(`${this.player2.health.toFixed(0)}/${MAX_HEALTH}`, canvas.width - 20 - barWidth / 2, barY + barHeight / 2 + 4);
+
+                // Mana Bars
+                const manaBarY = barY + barHeight + 10;
+                const manaBarHeight = 10;
+
+                // Player 1 Mana Bar
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(20, manaBarY, barWidth, manaBarHeight);
+                ctx.fillStyle = '#9f7aea';
+                ctx.fillRect(20, manaBarY, barWidth * (this.player1.mana / MAX_MANA), manaBarHeight);
+                ctx.strokeStyle = '#202020';
+                ctx.strokeRect(20, manaBarY, barWidth, manaBarHeight);
+                ctx.fillText(`${this.player1.mana.toFixed(0)}/${MAX_MANA}`, 20 + barWidth / 2, manaBarY + manaBarHeight / 2 + 4);
+
+                // Player 2 Mana Bar
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(canvas.width - 20 - barWidth, manaBarY, barWidth, manaBarHeight);
+                ctx.fillStyle = '#9f7aea';
+                ctx.fillRect(canvas.width - 20 - barWidth, manaBarY, barWidth * (this.player2.mana / MAX_MANA), manaBarHeight);
+                ctx.strokeStyle = '#202020';
+                ctx.strokeRect(canvas.width - 20 - barWidth, manaBarY, barWidth, manaBarHeight);
+                ctx.fillText(`${this.player2.mana.toFixed(0)}/${MAX_MANA}`, canvas.width - 20 - barWidth / 2, manaBarY + manaBarHeight / 2 + 4);
+
+                // Player Names
+                ctx.font = `${12 * pixel}px 'Press Start 2P'`;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.textAlign = 'left';
+                ctx.fillText(this.player1.name, 20, barY - 5);
+                ctx.textAlign = 'right';
+                ctx.fillText(this.player2.name, canvas.width - 20, barY - 5);
+
+                // Round Timer
+                ctx.font = `${24 * pixel}px 'Press Start 2P'`;
+                ctx.fillStyle = '#ecc94b';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.roundTimer.toString(), canvas.width / 2, 40);
+
+                // Round Score
+                ctx.font = `${16 * pixel}px 'Press Start 2P'`;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.textAlign = 'left';
+                ctx.fillText(`P1: ${this.player1Score}`, 20, 100);
+                ctx.textAlign = 'right';
+                ctx.fillText(`P2: ${this.player2Score}`, canvas.width - 20, 100);
+
+
+                // Canvas Message (GO!, countdown, etc.)
+                if (this.canvasMessageTimer > 0) {
+                    ctx.font = `${48 * pixel}px 'Press Start 2P'`;
+                    ctx.fillStyle = '#ecc94b';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.canvasMessage, canvas.width / 2, canvas.height / 2);
+                }
+
+                // Floating Damage Numbers
+                ctx.textAlign = 'center';
+                this.floatingDamageNumbers.forEach(dmg => {
+                    ctx.font = `${dmg.isCrit ? 18 : 14}px 'Press Start 2P'`;
+                    ctx.fillStyle = dmg.isCrit ? 'yellow' : 'white';
+                    ctx.fillText(dmg.damage.toFixed(0), dmg.x, dmg.y - (1000 - dmg.timer) / 20);
+                });
+            }
+
+            /**
+             * Main game loop.
+             */
+            gameLoop() {
+                if (!this.gameRunning) {
+                    cancelAnimationFrame(this.animationFrameId);
+                    return;
+                }
+
+                this.update();
+                this.draw();
+
+                // Update canvas message timer
+                if (this.canvasMessageTimer > 0) {
+                    this.canvasMessageTimer -= 1000 / 60;
+                    if (this.canvasMessageTimer <= 0) {
+                        this.canvasMessage = '';
+                    }
+                }
+
+                this.animationFrameId = requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        const gameManager = new GameManager(); // Create a single instance of GameManager
+
+        // --- Event Listeners ---
+
+        // Keyboard input event listeners (only for Player 1)
+        document.addEventListener('keydown', (e) => {
+            if (gameManager.gameRunning && gameManager.gameStarted) {
+                const key = e.key;
+                const now = Date.now(); 
+
+                // Use Arrow keys for movement and jump
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'w', 's'].includes(key)) {
+                    if (gameManager.commandBuffer.length === 0 || (now - gameManager.lastInputTime > 30 && gameManager.commandBuffer[gameManager.commandBuffer.length - 1].key !== key)) { // 30ms
+                        gameManager.commandBuffer.push({ key: key, timestamp: now });
+                        gameManager.lastInputTime = now;
+                    } else if (gameManager.commandBuffer.length > 0 && gameManager.commandBuffer[gameManager.commandBuffer.length - 1].key === key && (now - gameManager.lastInputTime) <= 30) {
+                        gameManager.lastInputTime = now;
+                    }
+                }
+
+                // Check for special move command
+                gameManager.checkSpecialMoveCommand(gameManager.player1, gameManager.player2);
+
+                switch (key) {
+                    case 'ArrowLeft': gameManager.keys.ArrowLeft = true; break;
+                    case 'ArrowRight': gameManager.keys.ArrowRight = true; break;
+                    case 'ArrowUp': gameManager.keys.ArrowUp = true; break; // Jump
+                    case 'ArrowDown': gameManager.keys.ArrowDown = true; break; // Down / Guard
+                    case 'w': // Player 1 Basic Attack (Still 'w' for attack)
+                        // Allow basic attack only if not attacking, not guarding, and on ground (not jumping)
+                        if (!gameManager.player1.isAttacking && !gameManager.player1.isGuarding && !gameManager.player1.isJumping) {
+                            if (!gameManager.player1.specialAttackActive) {
+                                gameManager.handleAttack(gameManager.player1, gameManager.player2);
+                            }
+                        }
+                        break;
+                    case 's': // Player 1 Guard (Still 's' for guard)
+                        gameManager.keys.s = true;
+                        gameManager.player1.isGuarding = true;
+                        break;
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key;
+            switch (key) {
+                case 'ArrowLeft': gameManager.keys.ArrowLeft = false; break;
+                case 'ArrowRight': gameManager.keys.ArrowRight = false; break;
+                case 'ArrowUp': gameManager.keys.ArrowUp = false; break;
+                case 'ArrowDown': gameManager.keys.ArrowDown = false; break;
+                case 'w': break;
+                case 's':
+                    gameManager.keys.s = false;
+                    gameManager.player1.isGuarding = false;
+                    break;
+            }
+        });
+
+        // Button click event listeners (basic attack and guard)
+        player1AttackButton.addEventListener('click', () => {
+            // Only allow basic attack if not attacking, not guarding, and on ground (not jumping)
+            if (gameManager.gameRunning && gameManager.gameStarted && !gameManager.player1.isAttacking && !gameManager.player1.isGuarding && !gameManager.player1.isJumping) {
+                gameManager.handleAttack(gameManager.player1, gameManager.player2);
+            }
+        });
+
+        player1GuardButton.addEventListener('mousedown', () => {
+            if (gameManager.gameRunning && gameManager.gameStarted) {
+                gameManager.player1.isGuarding = true;
+                gameManager.displayCanvasMessage("가드!");
+            }
+        });
+        player1GuardButton.addEventListener('mouseup', () => {
+            if (gameManager.gameRunning && gameManager.gameStarted) {
+                gameManager.player1.isGuarding = false;
+            }
+        });
+        player1GuardButton.addEventListener('mouseleave', () => {
+            if (gameManager.gameRunning && gameManager.gameStarted) {
+                gameManager.player1.isGuarding = false;
+            }
+        });
+
+        // Character selection button listeners
+        selectTungtungButton.addEventListener('click', () => {
+            gameManager.selectedCharacterId = 'tungtung'; // Set selected character
+            generateLoreButton.style.display = 'block'; // Show lore button
+            characterLoreDisplay.style.display = 'block'; // Show lore display
+            characterLoreDisplay.textContent = '퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르를 선택했습니다. 이야기 생성 버튼을 누르거나 바로 게임을 시작하세요!'; // Initial message for lore
+            startGameButton.style.display = 'block'; // Show "Start Game" button
+        });
+        selectTralalaroButton.addEventListener('click', () => { // Changed to new character button
+            gameManager.selectedCharacterId = 'tralarero'; // Set selected character
+            generateLoreButton.style.display = 'block'; // Show lore button
+            characterLoreDisplay.style.display = 'block'; // Show lore display
+            characterLoreDisplay.textContent = '트랄라레로 트랄랄라를 선택했습니다. 이야기 생성 버튼을 누르거나 바로 게임을 시작하세요!'; // Initial message for lore
+            startGameButton.style.display = 'block'; // Show "Start Game" button
+        });
+
+        // New: Generate Lore Button Listener
+        generateLoreButton.addEventListener('click', async () => {
+            if (!gameManager.selectedCharacterId) {
+                characterLoreDisplay.textContent = '먼저 캐릭터를 선택해주세요!';
+                return;
+            }
+
+            characterLoreDisplay.textContent = '이야기 생성 중...'; // Loading message
+            generateLoreButton.disabled = true; // Disable button during generation
+
+            const selectedChar = characterDefinitions[gameManager.selectedCharacterId];
+            const prompt = `다음 캐릭터에 대한 짧고 창의적인 배경 이야기(lore)를 픽셀 아트 게임 스타일에 맞춰 50단어 이내로 생성해 주세요.
+
+캐릭터 이름: ${selectedChar.name}
+특징: ${selectedChar.description}
+
+이야기:`;
+
+            try {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const loreText = result.candidates[0].content.parts[0].text;
+                    characterLoreDisplay.textContent = loreText;
+                } else {
+                    characterLoreDisplay.textContent = '이야기를 생성할 수 없습니다. 다시 시도해주세요.';
+                    console.error("Gemini API response structure unexpected:", result);
+                }
+            } catch (error) {
+                characterLoreDisplay.textContent = `이야기 생성 중 오류 발생: ${error.message}`;
+                console.error("Error generating lore:", error);
+            } finally {
+                generateLoreButton.disabled = false; // Re-enable button
+            }
+        });
+
+
+        // Initial setup on window load
+        window.onload = function() {
+            characterSelectionScreen.style.display = 'flex';
+            gameContainer.style.display = 'none';
+            showMessageBox("게임 시작", "플레이할 캐릭터를 선택하세요!");
+        };
+
+        // Canvas resizing (CSS handles responsive display, drawing buffer size is fixed)
+        window.addEventListener('resize', () => {
+            // No need to adjust player positions on resize for this simple game.
+        });
+
+        // Add a general "Start Game" button after character selection to clearly proceed
+        const startGameButton = document.createElement('button');
+        startGameButton.id = 'startGameButton';
+        startGameButton.className = 'control-button mt-4';
+        startGameButton.textContent = '게임 시작!';
+        startGameButton.style.display = 'none'; // Initially hidden
+        characterSelectionScreen.appendChild(startGameButton);
+
+        startGameButton.addEventListener('click', () => {
+            if (gameManager.selectedCharacterId) {
+                gameManager.startCountdownAndGame(gameManager.selectedCharacterId);
+            } else {
+                characterLoreDisplay.textContent = '먼저 캐릭터를 선택해주세요!';
+            }
+        });
+
+        // Show start game button after a character is selected (event delegation or individual listeners)
+        selectTungtungButton.addEventListener('click', () => {
+            gameManager.selectedCharacterId = 'tungtung';
+            generateLoreButton.style.display = 'block';
+            characterLoreDisplay.style.display = 'block';
+            characterLoreDisplay.textContent = '퉁퉁퉁퉁퉁퉁퉁퉁퉁사후르를 선택했습니다. 이야기 생성 버튼을 누르거나 바로 게임을 시작하세요!';
+            startGameButton.style.display = 'block'; // Show "Start Game" button
+        });
+        selectTralalaroButton.addEventListener('click', () => {
+            gameManager.selectedCharacterId = 'tralarero';
+            generateLoreButton.style.display = 'block';
+            characterLoreDisplay.style.display = 'block';
+            characterLoreDisplay.textContent = '트랄라레로 트랄랄라를 선택했습니다. 이야기 생성 버튼을 누르거나 바로 게임을 시작하세요!';
+            startGameButton.style.display = 'block'; // Show "Start Game" button
+        });
+
+    </script>
+</body>
+</html>
