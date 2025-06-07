@@ -526,8 +526,8 @@ this.displayCanvasMessage("무승부!");
 
 setTimeout(() => {
 if (this.player1Score >= MAX_ROUNDS || this.player2Score >= MAX_ROUNDS) {
-const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
-showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame());
+      const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
+      showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame(), "다시 시작");
 } else {
 this.currentRound++;
 this.startNewRound();
@@ -660,8 +660,8 @@ this.displayCanvasMessage("KO!");
 
 setTimeout(() => {
 if (this.player1Score >= MAX_ROUNDS || this.player2Score >= MAX_ROUNDS) {
-const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
-showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame());
+      const finalWinner = this.player1Score >= MAX_ROUNDS ? this.player1 : this.player2;
+      showMessageBox("게임 종료!", `${finalWinner.name} 최종 승리!`, () => this.resetGame(), "다시 시작");
 } else {
 this.currentRound++;
 this.startNewRound();
