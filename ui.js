@@ -15,9 +15,10 @@ const generateLoreButton = document.getElementById('generateLoreButton');
 const characterLoreDisplay = document.getElementById('characterLoreDisplay');
 
 // Show a custom message box
-function showMessageBox(title, message, onClose = () => {}) {
+function showMessageBox(title, message, onClose = () => {}, buttonText = '확인') {
   messageBoxTitle.textContent = title;
   messageBoxContent.textContent = message;
+  messageBoxCloseButton.textContent = buttonText;
   messageBoxOverlay.classList.add('active');
 
   const closeHandler = () => {
